@@ -367,6 +367,15 @@
             cursor: pointer;
         }
 
+        .project-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: rgba(156, 111, 212, 0.1);
+        }
+
         .project-card:hover {
             transform: translateY(-10px);
             border-color: #9c6fd4;
@@ -604,6 +613,15 @@
             color: #00bcd4;
             margin-bottom: 15px;
             text-align: center;
+        }
+
+        .interest-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: rgba(156, 111, 212, 0.1);
         }
 
         /* Contact - Surface Return */
@@ -862,13 +880,47 @@
                 font-size: 32px !important;
             }
 
-            .services-table {
-                font-size: 14px;
-            }
-
+            .services-table,
+            .services-table thead,
+            .services-table tbody,
+            .services-table tr,
             .services-table th,
             .services-table td {
-                padding: 10px;
+                display: block;
+                width: 100%;
+            }
+
+            .services-table thead {
+                display: none; /* Hide table headers on mobile */
+            }
+
+            .services-table tr {
+                margin-bottom: 30px;
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(212, 169, 66, 0.2);
+                border-radius: 8px;
+                padding: 20px;
+            }
+
+            .services-table td {
+                border: none;
+                padding: 10px 0;
+                text-align: left;
+                position: relative;
+                padding-left: 45%;
+            }
+
+            .services-table td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0;
+                width: 40%;
+                padding-right: 10px;
+                font-weight: bold;
+                color: #d4a942;
+                font-family: 'IBM Plex Mono', 'Courier New', monospace;
+                font-size: 12px;
+                text-transform: uppercase;
             }
 
             .project-grid {
@@ -962,7 +1014,7 @@
 
         <div class="hero-content">
             <h1>ARTHUR KISAKA</h1>
-            <div class="subtitle">Innovation & Systems Engineer | AI Consultant</div>
+            <div class="subtitle">AI & Innovations Consultant | Petroleum Engineer</div>
             <p class="mission">
                 I bridge ideas and reality through AI solutions, systems engineering, and innovation. 
                 My mission is to create opportunities for everyone I encounter to be the best version of themselves 
@@ -984,24 +1036,24 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>Workflow Automation</td>
-                    <td>n8n-based integrations for business processes</td>
-                    <td>Automated CRM and newsletters, saving 20 hours/week</td>
+                    <td data-label="Service">Workflow Automation</td>
+                    <td data-label="Description">n8n-based integrations for business processes</td>
+                    <td data-label="Example Impact">Automated CRM and newsletters, saving 20 hours/week</td>
                 </tr>
                 <tr>
-                    <td>Agentic AI Development</td>
-                    <td>Custom AI agents & tools for data retreival and interpretation (e.g., lithology from well logs)</td>
-                    <td>Reduced analysis time by 50% in exploration projects</td>
+                    <td data-label="Service">Agentic AI Development</td>
+                    <td data-label="Description">Custom AI agents & tools for data retreival and interpretation (e.g., lithology from well logs)</td>
+                    <td data-label="Example Impact">Reduced analysis time by 50% in exploration projects</td>
                 </tr>
                 <tr>
-                    <td>Manufacturing Systems Optimization</td>
-                    <td>Layout design, process audit and optimisation</td>
-                    <td>20% throughput increase in manufacturing</td>
+                    <td data-label="Service">Manufacturing Systems Optimization</td>
+                    <td data-label="Description">Layout design, process audit and optimisation</td>
+                    <td data-label="Example Impact">20% throughput increase in manufacturing</td>
                 </tr>
                 <tr>
-                    <td>Product Innovations Advisory</td>
-                    <td>Product innovations(beverage/packaging) from idea to GTM strategy</td>
-                    <td>Introduced new product/packaging innovation in 9 months with ROI of 2 years</td>
+                    <td data-label="Service">Product Innovations Advisory</td>
+                    <td data-label="Description">Product innovations(beverage/packaging) from idea to GTM strategy</td>
+                    <td data-label="Example Impact">Introduced new product/packaging innovation in 9 months with ROI of 2 years</td>
                 </tr>
             </tbody>
         </table>
@@ -1014,6 +1066,7 @@
         <div class="project-grid">
             <div class="project-card">
                 <h3>ML Lithology Interpreter</h3>
+                <img src="images/well_log.jpg" alt="Well Log" class="project-image">
                 <p>
                     Final year project: Automated interpretation of well log lithology using machine learning. 
                     Built classification models to identify rock types from geophysical logs, reducing interpretation 
@@ -1026,6 +1079,7 @@
 
             <div class="project-card">
                 <h3>AI Workflow Automation</h3>
+                <img src="images/n8nexample.jpg" alt="n8n Workflow Automation" class="project-image">
                 <p>
                     Designing and deploying intelligent automation workflows for business processes. 
                     From contact form handling to newsletter signups and CRM integration, bridging 
@@ -1038,8 +1092,10 @@
 
             <div class="project-card">
                 <h3>Hackathon Submission</h3>
+                <img src="images/agentic_workflow.jpg" alt="Agentic RAG Workflow" class="project-image">
                 <p>
-                    TBA
+                    Development of an Agentic AI Retreival Augmented Generation (RAG) system that analyses
+                    geophysical well data and can perform operations such as information retreival and inference.
                 </p>
                 <span class="project-tag">Innovation</span>
                 <span class="project-tag">Agentic AI</span>
@@ -1049,6 +1105,7 @@
 
             <div class="project-card">
                 <h3>5.8 Gin & Tonic Development</h3>
+                <img src="images/5.8_GnT.jpg" alt="5.8 Gin & Tonic" class="project-image">
                 <p>
                     Coordinated end-to-end product development from business case development, recipe formulation through lab trials, 
                     sensory evaluation, packaging design, and commercial rollout. Coordinated cross-functional 
@@ -1066,18 +1123,29 @@
         <h2>Professional Layers</h2>
 
         <div class="job">
-            <h3>Innovations & Operations Associate</h3>
-            <div class="company">African Originals | Nairobi</div>
-            <div class="period">2023 - Present</div>
+            <h3>Co-Founder</h3>
+            <div class="company">Ramani Honey | Nairobi</div>
+            <div class="period">2025 - Present</div>
             <ul>
-                <li>Coordinated implementation of new products: 5.8 Gin & Tonic, Mara Gin, KO Soda Water & KO Klub</li>
+                <li>Setting up a honey aggregation, marketing and distribution business</li>
+                <li>Partnering with farmers to source for authentic honey</li>
+                <li>Intergrating AI workflows and agents to support business activities</li>
+            </ul>
+        </div>
+
+        <div class="job">
+            <h3>Innovations & Projects Associate</h3>
+            <div class="company">African Originals | Nairobi</div>
+            <div class="period">2023 - 2025</div>
+            <ul>
+                <li>Coordinated the development of new product innovations: 5.8 Gin & Tonic, Mara Gin, KO Dry Cider & KO Klub</li>
+                <li>Led renovation of African Originals offices from warehouse sourcing to execution</li>
                 <li>Led internal and external sensory sessions to validate product quality, refine recipes, and gauge consumer sentiment</li>
                 <li>Designed and rolled out SOPs for structured consumer research</li>
                 <li>Facilitated cross-functional collaboration across finance, commercial, marketing, supply chain, and production</li>
                 <li>Implemented packaging design for Mara Gin</li>
                 <li>Developed automated Google Sheets tracker for innovation projects</li>
                 <li>Executed lab and pilot trials for recipe development</li>
-                <li>Led renovation of African Originals offices from warehouse sourcing to execution</li>
             </ul>
         </div>
 
@@ -1086,11 +1154,24 @@
             <div class="company">Premier Foods Industry Limited | Nairobi</div>
             <div class="period">2022 - 2023</div>
             <ul>
-                <li>Spearheaded ginger process automation, boosting throughput by 65% through washer, juicer, and filter integration</li>
+                <li>Spearheaded ginger process automation, boosting throughput by 45% through washer, juicer, and filter integration</li>
                 <li>Coordinated fabrication of mango ripening crates to optimize space and support mango puree production</li>
                 <li>Implemented water sustainability initiative by increasing storage, sub-metering, and rainwater harvesting</li>
                 <li>Produced detailed P&IDs, plant layouts, and technical drawings using AutoCAD and SolidWorks</li>
                 <li>Participated in sensory evaluation committee to assess new products</li>
+            </ul>
+        </div>
+
+        <div class="job">
+            <h3>Student Chapter President</h3>
+            <div class="company">Society of Petroleum Engineers Kenyatta University Student Chapter</div>
+            <div class="period">2020</div>
+            <ul>
+                <li>Spearheaded the realignment chapter activities to a virtual environment during a global pandemic with a zero-budget implication due to industry downturn.</li>
+                <li>Coordinated the formulation and implementation of a strategic vision for the chapter in three areas: Global Outlook, Industry Ready and Technical Emphasis</li>
+                <li>Initiated SPE KUSC technical sessions to boost technical competence of members in line with relevant and emerging technologies such as CAD, AI and IoT</li>
+                <li>Fostered collaboration with other Student Chapters within East Africa (UoN, MKU, Makerere, University of Dar Es Salaam) and relevant institutions.</li>
+                <li>Oversaw and participated in the editing and publication of two issues of the PetroBrief newsletter</li>
             </ul>
         </div>
 
@@ -1125,7 +1206,7 @@
 
             <div class="interest-card">
                 <h3>🏃 Running & Cycling</h3>
-                <img src="images/running-cycling.jpg" alt="Running and Cycling" class="interest-image">
+                <img src="images/cycling.jpg" alt="Running and Cycling" class="interest-image">
                 <p style="color: #aaa;">
                     No human is limited. I would like to see how far my body can go and I enjoy the discipline
                     of endurance sports. Follow me on Strava and give me a kudos, I am BEGGING you, thanks 💯.
@@ -1153,9 +1234,10 @@
 
             <div class="interest-card">
                 <h3>🎙️ Listening to podcasts</h3>
-                <img src="images/podcasts.jpg" alt="Podcasts" class="interest-image">
+                <img src="images/founders.jpg" alt="Podcasts" class="interest-image"> 
+                <img src="images/fincorrect.jpg" alt="Podcasts" class="interest-image">
                 <p style="color: #aaa;">
-                    iI enjoy listening to podcasts that cast a different perspective on life and help me to
+                    I enjoy listening to podcasts that cast a different perspective on life and help me to
                     appreciate the wisdom of others. My favourites are Founders and Financially Incorrect, 
                 </p>
             </div>
