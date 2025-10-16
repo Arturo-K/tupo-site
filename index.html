@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href="https://arthurkisaka.site">
+    <meta property="og:url" content="https://arthurkisaka.site">
+    <title>Arthur Kisaka - Innovation & Systems Engineer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="images\Drill_Bit 60px.svg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Drill Bit & Depth Counter */
+        .drill-container {
+            position: fixed;
+            left: 50px;
+            top: 0;
+            height: 100vh;
+            width: 80px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .drill-bit {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: top 0.1s ease-out;
+            filter: drop-shadow(0 0 10px rgba(255, 136, 0, 0.5));
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        .drill-string {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 0;
+            width: 4px;
+            background: linear-gradient(180deg, 
+                rgba(85, 85, 85, 0) 0%,
+                rgba(85, 85, 85, 0.3) 10%,
+                rgba(85, 85, 85, 0.6) 20%,
+                #555 30%,
+                #555 100%
+            );
+            transition: height 0.1s ease-out;
+            box-shadow: 0 0 10px rgba(85, 85, 85, 0.5);
+        }
+
+        .drill-string::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 30px,
+                rgba(255, 136, 0, 0.3) 30px,
+                rgba(255, 136, 0, 0.3) 32px
+            );
+        }
+
+        .depth-counter {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff8800;
+            text-shadow: 0 0 10px rgba(255, 136, 0, 0.8);
+            z-index: 1001;
+            pointer-events: none;
+        }
+
+        .depth-label {
+            font-size: 10px;
+            color: #888;
+            display: block;
+            margin-top: 5px;
+            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 30px;
+            right: 50px;
+            z-index: 100;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        nav:hover,
+        nav.expanded {
+            width: auto;
+            padding: 15px 30px;
+            border-radius: 50px;
+        }
+
+        .nav-toggle {
+            cursor: pointer;
+            display: flex;
+            gap: 3px;
+            min-width: 20px;
+            transition: opacity 0.3s;
+        }
+
+        nav:hover .nav-toggle,
+        nav.expanded .nav-toggle {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .nav-toggle .log-line {
+            width: 3px;
+            height: 20px;
+            background: #ff8800;
+            border-radius: 2px;
+        }
+
+        .nav-toggle .log-line:nth-child(1) {
+            height: 25px;
+            animation: pulse1 2s ease-in-out infinite;
+        }
+
+        .nav-toggle .log-line:nth-child(2) {
+            height: 18px;
+            animation: pulse2 2s ease-in-out infinite 0.3s;
+        }
+
+        .nav-toggle .log-line:nth-child(3) {
+            height: 22px;
+            animation: pulse3 2s ease-in-out infinite 0.6s;
+        }
+
+        @keyframes pulse1 {
+            0%, 100% { height: 25px; opacity: 1; }
+            50% { height: 20px; opacity: 0.7; }
+        }
+
+        @keyframes pulse2 {
+            0%, 100% { height: 18px; opacity: 1; }
+            50% { height: 25px; opacity: 0.7; }
+        }
+
+        @keyframes pulse3 {
+            0%, 100% { height: 22px; opacity: 1; }
+            50% { height: 16px; opacity: 0.7; }
+        }
+
+        .nav-content {
+            display: none;
+            gap: 30px;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        nav:hover .nav-content,
+        nav.expanded .nav-content {
+            display: flex;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        nav a {
+            color: #888;
+            text-decoration: none;
+            font-size: 14px;
+            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+            transition: color 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        nav a:hover {
+            color: #ff8800;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            padding-left: 20px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .social-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            transition: color 0.3s, transform 0.2s;
+            text-decoration: none;
+            font-size: 18px;
+        }
+
+        .social-icon:hover {
+            color: #ff8800;
+            transform: translateY(-2px);
+        }
+
+        /* Section Base */
+        section {
+            min-height: 100vh;
+            padding: 100px 150px 100px 200px;
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Hero Section - Surface */
+        .hero {
+            background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-avatar {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ff8800;
+            box-shadow: 0 0 30px rgba(255, 136, 0, 0.5);
+            margin-bottom: 40px;
+            z-index: 2;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff8800, transparent);
+        }
+
+        .hero h1 {
+            font-size: 72px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: #fff;
+            letter-spacing: -2px;
+        }
+
+        .hero .subtitle {
+            font-size: 28px;
+            color: #ff8800;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .hero .mission {
+            font-size: 18px;
+            color: #888;
+            max-width: 700px;
+            line-height: 1.8;
+        }
+
+        /* About Section - Topsoil Layer */
+        .about {
+            background: linear-gradient(180deg, #0f0f0f 0%, #1a1208 100%);
+            border-left: 4px solid #8b6914;
+        }
+
+        .about h2 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #d4a942;
+        }
+
+        .services-table {
+            width: 100%;
+            max-width: 800px;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .services-table th, .services-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 16px;
+        }
+
+        .services-table th {
+            color: #d4a942;
+            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .services-table td {
+            color: #ccc;
+        }
+
+        .services-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+
+        /* Projects - Metamorphic Rock */
+        .projects {
+            background: linear-gradient(180deg, #1a0f0f 0%, #0f0a1a 100%);
+            border-left: 4px solid #4a148c;
+        }
+
+        .projects h2 {
+            font-size: 48px;
+            margin-bottom: 50px;
+            color: #9c6fd4;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(156, 111, 212, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            transition: transform 0.3s, border-color 0.3s;
+            cursor: pointer;
+        }
+
+        .project-card:hover {
+            transform: translateY(-10px);
+            border-color: #9c6fd4;
+        }
+
+        .project-card h3 {
+            font-size: 24px;
+            color: #9c6fd4;
+            margin-bottom: 15px;
+        }
+
+        .project-card p {
+            color: #aaa;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .project-tag {
+            display: inline-block;
+            background: rgba(156, 111, 212, 0.1);
+            color: #9c6fd4;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+            margin-right: 8px;
+            margin-top: 10px;
+        }
+
+        /* Work Experience - Sedimentary Layers */
+        .experience {
+            background: linear-gradient(180deg, #1a1208 0%, #1a0f0f 100%);
+            border-left: 4px solid #8b4513;
+        }
+
+        .experience h2 {
+            font-size: 48px;
+            margin-bottom: 50px;
+            color: #d4764f;
+        }
+
+        .job {
+            margin-bottom: 60px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid #ff8800;
+            border-radius: 8px;
+            transition: transform 0.3s, background 0.3s;
+        }
+
+        .job:hover {
+            transform: translateX(10px);
+            background: rgba(255, 136, 0, 0.05);
+        }
+
+        .job h3 {
+            font-size: 28px;
+            color: #ff8800;
+            margin-bottom: 10px;
+        }
+
+        .job .company {
+            font-size: 18px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .job .period {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .job ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .job ul li {
+            padding-left: 25px;
+            margin-bottom: 12px;
+            position: relative;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .job ul li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #ff8800;
+        }
+
+        /* Poetry - Igneous Formation with Contours */
+        .poetry {
+            background: linear-gradient(180deg, #0f0a1a 0%, #1a0a0a 100%);
+            border-left: 4px solid #c41e3a;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .poetry::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            right: -200px;
+            width: 600px;
+            height: 600px;
+            border: 2px solid rgba(196, 30, 58, 0.1);
+            border-radius: 50% 40% 60% 50%;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .poetry::after {
+            content: '';
+            position: absolute;
+            bottom: 10%;
+            left: -150px;
+            width: 500px;
+            height: 500px;
+            border: 2px solid rgba(196, 30, 58, 0.08);
+            border-radius: 40% 60% 50% 40%;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(30px, -30px) rotate(5deg); }
+        }
+
+        .poetry h2 {
+            font-size: 48px;
+            margin-bottom: 50px;
+            color: #e05263;
+            position: relative;
+            z-index: 2;
+        }
+
+        .poem-container {
+            max-width: 700px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .poem {
+            margin-bottom: 60px;
+            padding: 40px;
+            background: rgba(196, 30, 58, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(196, 30, 58, 0.2);
+        }
+
+        .poem h3 {
+            font-size: 28px;
+            color: #e05263;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .poem-text {
+            font-size: 16px;
+            line-height: 2;
+            color: #ccc;
+            font-style: italic;
+        }
+
+        /* Hidden Section - Deep Core Discovery */
+        .hidden-section {
+            background: linear-gradient(180deg, #1a0a0a 0%, #0a1a1a 100%);
+            border-left: 4px solid #00bcd4;
+            min-height: 50vh;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.5s;
+        }
+
+        .hidden-section.revealed {
+            min-height: 100vh;
+        }
+
+        .discovery-prompt {
+            font-size: 24px;
+            color: #00bcd4;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .hidden-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 1s;
+            width: 100%;
+            text-align: center;
+        }
+
+        .hidden-content.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .interests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+            max-width: 1000px; /* Limits grid width */
+            width: 100%; /* Ensures it respects max-width and centers */
+            margin-left: auto; /* Centers the grid horizontally */
+            margin-right: auto; /* Centers the grid horizontally */
+        }
+
+        .interest-card {
+            background: rgba(0, 188, 212, 0.05);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 188, 212, 0.2);
+            display: flex; /* Use flex to center content inside card */
+            flex-direction: column; /* Stack card content vertically */
+            justify-content: center; /* Center vertically within card */
+            align-items: center; /* Center horizontally within card */
+            text-align: center; /* Center any inline text */
+        }
+
+        .interest-card h3 {
+            font-size: 20px;
+            color: #00bcd4;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* Contact - Surface Return */
+        .contact {
+            background: linear-gradient(180deg, #0a1a1a 0%, #1a1a1a 100%);
+            border-left: 4px solid #4caf50;
+            text-align: center; /* Centers inline content (e.g., h2, p text) */
+            padding: 40px 20px; /* Adds padding for better spacing, adjustable */
+            max-width: 100%; /* Limits section width, adjustable */
+            margin: 0 auto; /* Centers the section itself if within a wider container */
+            display: flex; /* Uses flexbox for vertical stacking and centering */
+            flex-direction: column; /* Stacks children vertically */
+            align-items: center; /* Centers children horizontally */
+        }
+
+        .contact h2 {
+            font-size: 48px;
+            margin-bottom: 30px;
+            color: #4caf50;
+        }
+
+        .contact p {
+            font-size: 18px;
+            max-width: 600px;
+            margin-bottom: 40px;
+            max-width: 600px; /* Limits paragraph width for readability */
+            margin-left: auto; /* Centers the paragraph */
+            margin-right: auto; /* Centers the paragraph */
+        }
+
+        .contact-form {
+            max-width: 600px;
+            margin: 0 auto 30px; /* Centers form and adds space below */
+            width: 100%; /* Ensures it respects max-width */
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #888;
+            font-size: 14px;
+            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: 0; /* Ensure label aligns with other form elements */
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4caf50;
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .checkbox-group {
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        }
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+            vertical-align: middle;
+            accent-color: #4caf50;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            padding: 2px;
+            width: 18px;
+            height: 18px;
+        }
+        .checkbox-group label {
+            color: #888;
+            font-size: 14px;
+            font-family: 'IBM Plex Mono', 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+        .contact-form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .contact-form .form-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .contact-form input[type="checkbox"] {
+            cursor: pointer;
+            opacity: 1 !important;
+        }
+
+        .submit-btn {
+            background: #4caf50;
+            color: #fff;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .download-cv {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            padding: 15px 25px;
+            background: transparent;
+            border: 2px solid #4caf50;
+            color: #4caf50;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+        }
+
+        .download-cv:hover {
+            background: #4caf50;
+            color: #fff;
+        }
+
+        .cv-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* Footer */
+        footer {
+            background: #0a0a0a;
+            padding: 40px 150px 40px 200px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            section {
+                padding: 80px 30px 80px 80px;
+            }
+
+            .drill-container {
+                left: 20px;
+                width: 40px;
+            }
+
+            .depth-counter {
+                left: 10px;
+                font-size: 18px;
+            }
+
+            nav {
+                right: 20px;
+            }
+
+            nav:hover,
+            nav.expanded {
+                width: calc(100vw - 40px);
+                right: 20px;
+            }
+
+            .nav-content {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .social-icons {
+                border-left: none;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                padding-left: 0;
+                padding-top: 15px;
+                z-index: 1002;
+            }
+
+            .social-icon {
+                pointer-events: auto;
+            }
+
+            .hero-content {
+                max-width: 100%;
+            }
+
+            .hero h1 {
+                font-size: 42px;
+            }
+
+            .hero .subtitle {
+                font-size: 20px;
+            }
+
+            .hero-image {
+                display: none;
+            }
+
+            section h2 {
+                font-size: 36px !important;
+            }
+
+            footer {
+                padding: 40px 30px 40px 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Drill Bit & Depth Counter -->
+    <div class="drill-container">
+        <div class="drill-string" id="drillString"></div>
+        <!-- Replace the src below with your drill bit image URL -->
+        <img class="drill-bit" src="images\Drill_Bit 60px.svg" alt="Drill Bit">
+    </div>
+
+    <div class="depth-counter">
+        <div id="depth">0</div>
+        <span class="depth-label">METRES</span>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="mainNav">
+        <div class="nav-toggle" onclick="toggleNav()">
+            <div class="log-line"></div>
+            <div class="log-line"></div>
+            <div class="log-line"></div>
+        </div>
+        <div class="nav-content">
+            <div class="nav-links">
+                <a href="#hero">Surface</a>
+                <a href="#about">About</a>
+                <a href="#experience">Experience</a>
+                <a href="#projects">Projects</a>
+                <a href="#interests">Interests</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <div class="social-icons">
+                <a href="https://github.com/Arturo-K" target="_blank" class="social-icon" title="GitHub">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+                <a href="https://www.linkedin.com/in/arthur-k-1284b7121/" target="_blank" class="social-icon" title="LinkedIn">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                    </svg>
+                </a>
+                <a href="https://huggingface.co/MurumbaKisaka" target="_blank" class="social-icon" title="Hugging Face">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <img src="images\arthur_hero_2.svg" alt="Arthur Kisaka" class="hero-avatar">
+
+        <div class="hero-content">
+            <h1>ARTHUR KISAKA</h1>
+            <div class="subtitle">Innovation & Systems Engineer | AI Consultant</div>
+            <p class="mission">
+                I bridge ideas and reality through AI solutions, systems engineering, and innovation. 
+                My mission is to create opportunities for everyone I encounter to be the best version of themselves 
+                and promote a society that equally values all of its members.
+            </p>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <h2>About Services</h2>
+        <table class="services-table">
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Description</th>
+                    <th>Example Impact</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Workflow Automation</td>
+                    <td>n8n-based integrations for business processes</td>
+                    <td>Automated CRM and newsletters, saving 20 hours/week</td>
+                </tr>
+                <tr>
+                    <td>Agentic AI Development</td>
+                    <td>Custom AI agents & tools for data retreival and interpretation (e.g., lithology from well logs)</td>
+                    <td>Reduced analysis time by 50% in exploration projects</td>
+                </tr>
+                <tr>
+                    <td>Manufacturing Systems Optimization</td>
+                    <td>Layout design, process audit and optimisation</td>
+                    <td>20% throughput increase in manufacturing</td>
+                </tr>
+                <tr>
+                    <td>Product Innovations Advisory</td>
+                    <td>Product innovations(beverage/packaging) from idea to GTM strategy</td>
+                    <td>Introduced new product/packaging innovation in 9 months with ROI of 2 years</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="projects" id="projects">
+        <h2>Featured Work</h2>
+
+        <div class="project-grid">
+            <div class="project-card">
+                <h3>ML Lithology Interpreter</h3>
+                <p>
+                    Final year project: Automated interpretation of well log lithology using machine learning. 
+                    Built classification models to identify rock types from geophysical logs, reducing interpretation 
+                    time and increasing accuracy for petroleum exploration.
+                </p>
+                <span class="project-tag">Python</span>
+                <span class="project-tag">Machine Learning</span>
+                <span class="project-tag">Petroleum Engineering</span>
+            </div>
+
+            <div class="project-card">
+                <h3>AI Workflow Automation</h3>
+                <p>
+                    Designing and deploying intelligent automation workflows for business processes. 
+                    From contact form handling to newsletter signups and CRM integration, bridging 
+                    AI capabilities with practical business needs.
+                </p>
+                <span class="project-tag">n8n</span>
+                <span class="project-tag">AI Automation</span>
+                <span class="project-tag">Integration</span>
+            </div>
+
+            <div class="project-card">
+                <h3>Hackathon Submission</h3>
+                <p>
+                    TBA
+                </p>
+                <span class="project-tag">Innovation</span>
+                <span class="project-tag">Agentic AI</span>
+                <span class="project-tag">RAG Frameworks</span>
+                <span class="project-tag">Rapid Prototyping</span>
+            </div>
+
+            <div class="project-card">
+                <h3>5.8 Gin & Tonic Development</h3>
+                <p>
+                    Coordinated end-to-end product development from business case development, recipe formulation through lab trials, 
+                    sensory evaluation, packaging design, and commercial rollout. Coordinated cross-functional 
+                    teams to bring a premium and natural premixed gin & tonic with three variants to market.
+                </p>
+                <span class="project-tag">Product Development</span>
+                <span class="project-tag">Innovation</span>
+                <span class="project-tag">Project Management</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience Section -->
+    <section class="experience" id="experience">
+        <h2>Professional Layers</h2>
+
+        <div class="job">
+            <h3>Innovations & Operations Associate</h3>
+            <div class="company">African Originals | Nairobi</div>
+            <div class="period">2023 - Present</div>
+            <ul>
+                <li>Coordinated implementation of new products: 5.8 Gin & Tonic, Mara Gin, KO Soda Water & KO Klub</li>
+                <li>Led internal and external sensory sessions to validate product quality, refine recipes, and gauge consumer sentiment</li>
+                <li>Designed and rolled out SOPs for structured consumer research</li>
+                <li>Facilitated cross-functional collaboration across finance, commercial, marketing, supply chain, and production</li>
+                <li>Implemented packaging design for Mara Gin</li>
+                <li>Developed automated Google Sheets tracker for innovation projects</li>
+                <li>Executed lab and pilot trials for recipe development</li>
+                <li>Led renovation of African Originals offices from warehouse sourcing to execution</li>
+            </ul>
+        </div>
+
+        <div class="job">
+            <h3>Engineering Projects Assistant</h3>
+            <div class="company">Premier Foods Industry Limited | Nairobi</div>
+            <div class="period">2022 - 2023</div>
+            <ul>
+                <li>Spearheaded ginger process automation, boosting throughput by 65% through washer, juicer, and filter integration</li>
+                <li>Coordinated fabrication of mango ripening crates to optimize space and support mango puree production</li>
+                <li>Implemented water sustainability initiative by increasing storage, sub-metering, and rainwater harvesting</li>
+                <li>Produced detailed P&IDs, plant layouts, and technical drawings using AutoCAD and SolidWorks</li>
+                <li>Participated in sensory evaluation committee to assess new products</li>
+            </ul>
+        </div>
+
+        <div class="job">
+            <h3>Lab Attache</h3>
+            <div class="company">Ministry of Mining & Petroleum | Nairobi</div>
+            <div class="period">2019</div>
+            <ul>
+                <li>Conducted geological investigations including petrographic analysis, pulverization, X-ray imaging, and chemical analysis</li>
+                <li>Developed lab reports based on client needs for mineral exploration, including a meteorite analysis</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Interests Section - Now visible in main flow -->
+    <section class="hidden-section revealed" id="interests" style="min-height: 100vh; cursor: default;">
+        <h2 style="color: #00bcd4; font-size: 48px; margin-bottom: 30px;">Beyond the Core</h2>
+        <p style="max-width: 700px; font-size: 18px; margin-bottom: 50px; color: #aaa;">
+            Sometimes the best discoveries happen off the main path. Here's what fuels my curiosity outside of work.
+        </p>
+
+        <div class="interests-grid">
+            <div class="interest-card">
+                <h3>🐝 Apiculture</h3>
+                <img src="images/apiculture.jpg" alt="Apiculture" class="interest-image">
+                <p style="color: #aaa;">
+                    Beekeeping teaches patience, observation, and respect for complex systems. I am fascinated by the
+                    life of the honeybee, being able to immortalise flowers with such sweet returns is not appreciated
+                    enough
+                </p>
+            </div>
+
+            <div class="interest-card">
+                <h3>🏃 Running & Cycling</h3>
+                <img src="images/running-cycling.jpg" alt="Running and Cycling" class="interest-image">
+                <p style="color: #aaa;">
+                    No human is limited. I would like to see how far my body can go and I enjoy the discipline
+                    of endurance sports. Follow me on Strava and give me a kudos, I am BEGGING you, thanks 💯.
+                </p>
+            </div>
+
+            <div class="interest-card">
+                <h3>✈️ Travel</h3>
+                <img src="images/travel.jpg" alt="Travel" class="interest-image">
+                <p style="color: #aaa;">
+                    Exploring new places, cultures, and perspectives. Every journey is a geological survey 
+                    of human experience.
+                </p>
+            </div>
+
+            <div class="interest-card">
+                <h3>📝 Reading </h3>
+                <img src="images/reading.jpg" alt="Reading" class="interest-image">
+                <p style="color: #aaa;">
+                    Reading allows us to imagine, to explore and to learn. Sometimes I'm deep into a biography
+                    understanding how different people spent their lives, other times I'm looking into the history
+                    of an area of interest and there is the occassional fiction to keep novel ideas flowing.
+                </p>
+            </div>
+
+            <div class="interest-card">
+                <h3>🎙️ Listening to podcasts</h3>
+                <img src="images/podcasts.jpg" alt="Podcasts" class="interest-image">
+                <p style="color: #aaa;">
+                    iI enjoy listening to podcasts that cast a different perspective on life and help me to
+                    appreciate the wisdom of others. My favourites are Founders and Financially Incorrect, 
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Poetry Section - Hidden Discovery -->
+    <section class="hidden-section" id="discovery" onclick="revealHidden()">
+        <div class="discovery-prompt">🧭🚧 DEVIATION DETECTED - CLICK TO EXPLORE 🧭🚧</div>
+        
+        <div class="hidden-content" id="hiddenContent">
+            <h2 style="color: #e05263; font-size: 48px; margin-bottom: 30px;">Verses from the Core</h2>
+            <p style="max-width: 700px; font-size: 18px; margin-bottom: 50px; color: #aaa; margin-left: auto; margin-right: auto; text-align: center;">
+                Words forged under pressure, ideas crystallized through time. Here are a few pieces from deeper layers.
+            </p>
+
+            <div class="poem-container" style="max-width: 800px; margin: 0 auto;">
+                <div class="poem">
+                    <h3>Decision Time</h3>
+                    <div class="poem-text">
+                        I stand before a cliff,<br>
+                        It'll all be over in a whiff,<br>
+                        All I can do is share a gif,<br>
+                        As I stare over the reef,<br>
+                        <br>
+                        The waves, oh how they crash,<br>
+                        Putting the silence to a hush,<br>
+                        There is no need for rush,<br>
+                        Even though time may dash,<br>
+                        <br>
+                        Many have taken the dive,<br>
+                        If the dive took five,<br>
+                        Who am I to prove,<br>
+                        My only desire is to be alive,<br>
+                        <br>
+                        To fly,<br>
+                        To die,<br>
+                        We'll know once we cast the die,<br>
+                        Yes I know the time is nigh,<br>
+                    </div>
+                </div>
+
+                <div class="poem">
+                    <h3>A Hidden Joy</h3>
+                    <div class="poem-text">
+                        It is only I who can understand,<br>
+                        This joy and hope that I found,<br>
+                        Though to many I may expound,<br>
+                        They can never grasp how profound,<br>
+                        <br>
+                        You see, it's sort of personal,<br>
+                        You have to yearn for what's eternal,<br>
+                        Yet is is not by sight, it's spiritual,<br>
+                        Yes, the Gospel is fundamental,<br>
+                        <br>
+                        For the joy we possess,<br>
+                        Is not for the world to see,<br>
+                        But that which we profess,<br>
+                        Comes only through the cross,<br>
+                    </div>
+                </div>
+
+                <div class="poem">
+                    <h3>Waves</h3>
+                    <div class="poem-text">
+                        As the suns rays hit the ocean,<br>
+                        they asked the waves why they were headed to shore,<br>
+                        The waves said let us show you,<br>
+                        And behold a shimmering light was shining,<br>
+                        Eyes staring into the horizon,<br>
+                        <br>
+                        Finally the sun could appreciate it's beauty in her eyes<br>
+                        So the suns rays painted her silhouette and the oceans waves rocked back and forth at her feet worshiping her beauty<br>
+                        <br>
+                        Behold it was you all along.<br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <h2>Secrets of the Deep</h2>
+        <p>
+            Ready to bridge AI and reality?
+        </p>
+        <p>
+            Let's craft solutions that transform your business. 
+            I'm here to help you become the best version of yourself; not with robotic implementations, 
+            but with thoughtful, human-centered AI consulting.
+        </p>
+
+        <form class="contact-form" id="contactForm">
+            <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Your Message</label>
+                <textarea id="message" name="message" required></textarea>
+            </div>
+            
+            <div class="form-group checkbox-group">
+            <input type="checkbox" id="subscribe" name="subscribe" value="yes">
+            <label for="subscribe">I would like to receive monthly blog posts via email</label>
+            </div>
+
+            <button type="submit" class="submit-btn">Send Message</button>
+        </form>
+
+        <a href="#" class="download-cv">
+            <svg class="cv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+            CV
+        </a>
+
+        <p style="margin-top: 40px; font-size: 16px;">
+            <strong>Email:</strong> m.arthurkisaka@gmail.com<br>
+            <strong>Phone:</strong> +254 796 841 404
+        </p>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Arthur Kisaka. Drilling deeper, building better.</p>
+    </footer>
+
+    <script>
+        // Drill bit animation and depth counter
+        const drillBit = document.querySelector('.drill-bit');
+         const drillString = document.getElementById('drillString');
+        const depthCounter = document.getElementById('depth');
+        
+        window.addEventListener('scroll', () => {
+            const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+            const maxDepth = 5000; // Maximum depth in meters
+            const currentDepth = Math.round(scrollPercent * maxDepth);
+            
+            // Update depth counter
+            depthCounter.textContent = currentDepth;
+            
+            // Move drill bit
+            const maxTravel = window.innerHeight - 100;
+            const drillPosition = scrollPercent * maxTravel;
+            drillBit.style.top = drillPosition + 'px';
+
+            // Update drill string length
+            drillString.style.height = drillPosition + 'px';
+        });
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Toggle navigation
+        function toggleNav() {
+            const nav = document.getElementById('mainNav');
+            nav.classList.toggle('expanded');
+        }
+
+        // Close nav when clicking outside
+        document.addEventListener('click', function(e) {
+            const nav = document.getElementById('mainNav');
+            if (!nav.contains(e.target) && nav.classList.contains('expanded')) {
+                nav.classList.remove('expanded');
+            }
+        });
+
+        // Hidden section reveal
+        function revealHidden() {
+            const hiddenContent = document.getElementById('hiddenContent');
+            const section = document.getElementById('discovery');
+            const prompt = document.querySelector('.discovery-prompt');
+            
+            if (!hiddenContent.classList.contains('show')) {
+                hiddenContent.classList.add('show');
+                section.classList.add('revealed');
+                prompt.style.display = 'none';
+                section.style.cursor = 'default';
+            }
+        }
+
+        // Contact form handling
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // TODO: Replace with your n8n webhook URL
+            const webhookURL = 'https://n8n.arthurkisaka.site/webhook-test/3b62a90f-5509-4390-b5c0-dac075603448';
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                message: document.getElementById('message').value,
+                subscribe: document.getElementById('subscribe').checked ? 'yes' : 'no' // Capture checkbox state
+            };
+
+            // Uncomment and configure when you have your webhook URL
+        
+            fetch(webhookURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Message sent! You\'ll receive a confirmation email shortly.');
+                this.reset();
+            })
+            .catch(error => {
+                alert('Error sending message. Please email me directly.');
+                console.error('Error:', error);
+            });
+           
+            // Temporary placeholder behavior
+            //alert('Form submitted! Replace webhookURL in the code with your n8n webhook to make this functional.');
+            this.reset();
+        });
+    </script>
+</body>
+</html>
