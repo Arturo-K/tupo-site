@@ -908,15 +908,18 @@
                 text-align: left;
                 overflow-wrap: break-word;
                 white-space: normal;
+                word-break: break-word;
                 position: relative;
-                padding-left: 45%;
+                padding-left: 0%;
+                padding-top: 25px;
             }
 
             .services-table td:before {
                 content: attr(data-label);
                 position: absolute;
                 left: 0;
-                width: 40%;
+                top: 0; /* Position at top instead */
+                width: auto;
                 padding-right: 10px;
                 font-weight: bold;
                 color: #d4a942;
