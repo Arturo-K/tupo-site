@@ -1451,8 +1451,7 @@
         document.getElementById('contactForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // TODO: Replace with your n8n webhook URL
-            const webhookURL = 'https://n8n.arthurkisaka.site/webhook-test/3b62a90f-5509-4390-b5c0-dac075603448';
+            const webhookURL = 'https://n8n.arthurkisaka.site/webhook/3b62a90f-5509-4390-b5c0-dac075603448';
             
             const formData = {
                 name: document.getElementById('name').value,
@@ -1479,10 +1478,8 @@
                 alert('Error sending message. Please email me directly.');
                 console.error('Error:', error);
             });
-           
-            // Temporary placeholder behavior
-            //alert('Form submitted! Replace webhookURL in the code with your n8n webhook to make this functional.');
-            this.reset();
+
+            //this.reset();
         });
     </script>
 </body>
