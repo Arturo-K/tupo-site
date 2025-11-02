@@ -8,3 +8,6 @@ This site showcases my portfolio, projects, and experiments in software, AI, and
 - **Frontend:** HTML, CSS, JS
 - **Hosting:** GitHub Pages
 - **Custom Domain:** arthurkisaka.site
+
+## License
+Licensed under the [Apache License 2.0](LICENSE).
