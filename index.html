@@ -1,1494 +1,3010 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="canonical" href="https://arthurkisaka.site">
-    <meta property="og:url" content="https://arthurkisaka.site">
-    <title>Arthur Kisaka - Innovation & Systems Engineer</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="icon" href="images\Drill_Bit 60px.svg">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #0a0a0a;
-            color: #e0e0e0;
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-
-        /* Drill Bit & Depth Counter */
-        .drill-container {
-            position: fixed;
-            left: 50px;
-            top: 0;
-            height: 100vh;
-            width: 80px;
-            z-index: 1000;
-            pointer-events: none;
-        }
-
-        .drill-bit {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            transition: top 0.1s ease-out;
-            filter: drop-shadow(0 0 10px rgba(255, 136, 0, 0.5));
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-        }
-
-        .drill-string {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            top: 0;
-            width: 4px;
-            background: linear-gradient(180deg, 
-                rgba(85, 85, 85, 0) 0%,
-                rgba(85, 85, 85, 0.3) 10%,
-                rgba(85, 85, 85, 0.6) 20%,
-                #555 30%,
-                #555 100%
-            );
-            transition: height 0.1s ease-out;
-            box-shadow: 0 0 10px rgba(85, 85, 85, 0.5);
-        }
-
-        .drill-string::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 6px;
-            height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 30px,
-                rgba(255, 136, 0, 0.3) 30px,
-                rgba(255, 136, 0, 0.3) 32px
-            );
-        }
-
-        .depth-counter {
-            position: fixed;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-family: 'IBM Plex Mono', 'Courier New', monospace;
-            font-size: 20px;
-            font-weight: bold;
-            color: #ff8800;
-            text-shadow: 0 0 10px rgba(255, 136, 0, 0.8);
-            z-index: 1001;
-            pointer-events: none;
-        }
-
-        .depth-label {
-            font-size: 10px;
-            color: #888;
-            display: block;
-            margin-top: 5px;
-            font-family: 'IBM Plex Mono', 'Courier New', monospace;
-        }
-
-        /* Navigation */
-        nav {
-            position: fixed;
-            top: 30px;
-            right: 50px;
-            z-index: 100;
-            background: rgba(10, 10, 10, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 15px;
-            border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s ease;
-            overflow: hidden;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        nav:hover,
-        nav.expanded {
-            width: auto;
-            padding: 15px 30px;
-            border-radius: 50px;
-        }
-
-        .nav-toggle {
-            cursor: pointer;
-            display: flex;
-            gap: 3px;
-            min-width: 20px;
-            transition: opacity 0.3s;
-        }
-
-        nav:hover .nav-toggle,
-        nav.expanded .nav-toggle {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .nav-toggle .log-line {
-            width: 3px;
-            height: 20px;
-            background: #ff8800;
-            border-radius: 2px;
-        }
-
-        .nav-toggle .log-line:nth-child(1) {
-            height: 25px;
-            animation: pulse1 2s ease-in-out infinite;
-        }
-
-        .nav-toggle .log-line:nth-child(2) {
-            height: 18px;
-            animation: pulse2 2s ease-in-out infinite 0.3s;
-        }
-
-        .nav-toggle .log-line:nth-child(3) {
-            height: 22px;
-            animation: pulse3 2s ease-in-out infinite 0.6s;
-        }
-
-        @keyframes pulse1 {
-            0%, 100% { height: 25px; opacity: 1; }
-            50% { height: 20px; opacity: 0.7; }
-        }
-
-        @keyframes pulse2 {
-            0%, 100% { height: 18px; opacity: 1; }
-            50% { height: 25px; opacity: 0.7; }
-        }
-
-        @keyframes pulse3 {
-            0%, 100% { height: 22px; opacity: 1; }
-            50% { height: 16px; opacity: 0.7; }
-        }
-
-        .nav-content {
-            display: none;
-            gap: 30px;
-            align-items: center;
-            white-space: nowrap;
-        }
-
-        nav:hover .nav-content,
-        nav.expanded .nav-content {
-            display: flex;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
-
-        nav a {
-            color: #888;
-            text-decoration: none;
-            font-size: 14px;
-            font-family: 'IBM Plex Mono', 'Courier New', monospace;
-            transition: color 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        nav a:hover {
-            color: #ff8800;
-        }
-
-        .social-icons {
-            display: flex;
-            gap: 15px;
-            padding-left: 20px;
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .social-icon {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #888;
-            transition: color 0.3s, transform 0.2s;
-            text-decoration: none;
-            font-size: 18px;
-        }
-
-        .social-icon:hover {
-            color: #ff8800;
-            transform: translateY(-2px);
-        }
-
-        /* Section Base */
-        section {
-            min-height: 100vh;
-            padding: 100px 150px 100px 200px;
-            position: relative;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* Hero Section - Surface */
-        .hero {
-            background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-avatar {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #ff8800;
-            box-shadow: 0 0 30px rgba(255, 136, 0, 0.5);
-            margin-bottom: 40px;
-            z-index: 2;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #ff8800, transparent);
-        }
-
-        .hero h1 {
-            font-size: 72px;
-            font-weight: 800;
-            margin-bottom: 20px;
-            color: #fff;
-            letter-spacing: -2px;
-        }
-
-        .hero .subtitle {
-            font-size: 28px;
-            color: #ff8800;
-            margin-bottom: 30px;
-            font-weight: 300;
-        }
-
-        .hero .mission {
-            font-size: 18px;
-            color: #888;
-            max-width: 700px;
-            line-height: 1.8;
-        }
-
-        /* About Section - Topsoil Layer */
-        .about {
-            background: linear-gradient(180deg, #0f0f0f 0%, #1a1208 100%);
-            border-left: 4px solid #8b6914;
-        }
-
-        .about h2 {
-            font-size: 48px;
-            margin-bottom: 20px;
-            color: #d4a942;
-        }
-
-        .services-table {
-            width: 100%;
-            max-width: 800px;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        .services-table th, .services-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 16px;
-        }
-
-        .services-table th {
-            color: #d4a942;
-            font-family: 'IBM Plex Mono', 'Courier New', monospace;
-            text-transform: uppercase;
-            font-size: 14px;
-        }
-
-        .services-table td {
-            color: #ccc;
-        }
-
-        .services-table tr:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-
-        /* Projects - Metamorphic Rock */
-        .projects {
-            background: linear-gradient(180deg, #1a0f0f 0%, #0f0a1a 100%);
-            border-left: 4px solid #4a148c;
-        }
-
-        .projects h2 {
-            font-size: 48px;
-            margin-bottom: 50px;
-            color: #9c6fd4;
-        }
-
-        .project-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-        }
-
-        .project-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(156, 111, 212, 0.2);
-            border-radius: 12px;
-            padding: 30px;
-            transition: transform 0.3s, border-color 0.3s;
-            cursor: pointer;
-        }
-
-        .project-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            background: rgba(156, 111, 212, 0.1);
-        }
-
-        .project-card:hover {
-            transform: translateY(-10px);
-            border-color: #9c6fd4;
-        }
-
-        .project-card h3 {
-            font-size: 24px;
-            color: #9c6fd4;
-            margin-bottom: 15px;
-        }
-
-        .project-card p {
-            color: #aaa;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-
-        .project-tag {
-            display: inline-block;
-            background: rgba(156, 111, 212, 0.1);
-            color: #9c6fd4;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-family: 'IBM Plex Mono', 'Courier New', monospace;
-            margin-right: 8px;
-            margin-top: 10px;
-        }
-
-        /* Work Experience - Sedimentary Layers */
-        .experience {
-            background: linear-gradient(180deg, #1a1208 0%, #1a0f0f 100%);
-            border-left: 4px solid #8b4513;
-        }
-
-        .experience h2 {
-            font-size: 48px;
-            margin-bottom: 50px;
-            color: #d4764f;
-        }
-
-        .job {
-            margin-bottom: 60px;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.02);
-            border-left: 3px solid #ff8800;
-            border-radius: 8px;
-            transition: transform 0.3s, background 0.3s;
-        }
-
-        .job:hover {
-            transform: translateX(10px);
-            background: rgba(255, 136, 0, 0.05);
-        }
-
-        .job h3 {
-            font-size: 28px;
-            color: #ff8800;
-            margin-bottom: 10px;
-        }
-
-        .job .company {
-            font-size: 18px;
-            color: #888;
-            margin-bottom: 5px;
-        }
-
-        .job .period {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 20px;
-        }
-
-        .job ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .job ul li {
-            padding-left: 25px;
-            margin-bottom: 12px;
-            position: relative;
-            font-size: 16px;
-            line-height: 1.6;
-        }
-
-        .job ul li::before {
-            content: '→';
-            position: absolute;
-            left: 0;
-            color: #ff8800;
-        }
-
-        /* Poetry - Igneous Formation with Contours */
-        .poetry {
-            background: linear-gradient(180deg, #0f0a1a 0%, #1a0a0a 100%);
-            border-left: 4px solid #c41e3a;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .poetry::before {
-            content: '';
-            position: absolute;
-            top: 10%;
-            right: -200px;
-            width: 600px;
-            height: 600px;
-            border: 2px solid rgba(196, 30, 58, 0.1);
-            border-radius: 50% 40% 60% 50%;
-            animation: float 20s ease-in-out infinite;
-        }
-
-        .poetry::after {
-            content: '';
-            position: absolute;
-            bottom: 10%;
-            left: -150px;
-            width: 500px;
-            height: 500px;
-            border: 2px solid rgba(196, 30, 58, 0.08);
-            border-radius: 40% 60% 50% 40%;
-            animation: float 25s ease-in-out infinite reverse;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(30px, -30px) rotate(5deg); }
-        }
-
-        .poetry h2 {
-            font-size: 48px;
-            margin-bottom: 50px;
-            color: #e05263;
-            position: relative;
-            z-index: 2;
-        }
-
-        .poem-container {
-            max-width: 700px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .poem {
-            margin-bottom: 60px;
-            padding: 40px;
-            background: rgba(196, 30, 58, 0.05);
-            border-radius: 20px;
-            border: 1px solid rgba(196, 30, 58, 0.2);
-        }
-
-        .poem h3 {
-            font-size: 28px;
-            color: #e05263;
-            margin-bottom: 20px;
-            font-style: italic;
-        }
-
-        .poem-text {
-            font-size: 16px;
-            line-height: 2;
-            color: #ccc;
-            font-style: italic;
-        }
-
-        /* Hidden Section - Deep Core Discovery */
-        .hidden-section {
-            background: linear-gradient(180deg, #1a0a0a 0%, #0a1a1a 100%);
-            border-left: 4px solid #00bcd4;
-            min-height: 50vh;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.5s;
-        }
-
-        .hidden-section.revealed {
-            min-height: 100vh;
-        }
-
-        .discovery-prompt {
-            font-size: 24px;
-            color: #00bcd4;
-            margin-bottom: 20px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
-
-        .hidden-content {
-            display: none;
-            opacity: 0;
-            transition: opacity 1s;
-            width: 100%;
-            text-align: center;
-        }
-
-        .hidden-content.show {
-            display: block;
-            opacity: 1;
-        }
-
-        .interests-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-            max-width: 1000px; /* Limits grid width */
-            width: 100%; /* Ensures it respects max-width and centers */
-            margin-left: auto; /* Centers the grid horizontally */
-            margin-right: auto; /* Centers the grid horizontally */
-        }
-
-        .interest-card {
-            background: rgba(0, 188, 212, 0.05);
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid rgba(0, 188, 212, 0.2);
-            display: flex; /* Use flex to center content inside card */
-            flex-direction: column; /* Stack card content vertically */
-            justify-content: center; /* Center vertically within card */
-            align-items: center; /* Center horizontally within card */
-            text-align: center; /* Center any inline text */
-        }
-
-        .interest-card h3 {
-            font-size: 20px;
-            color: #00bcd4;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .interest-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            background: rgba(156, 111, 212, 0.1);
-        }
-
-        /* Contact - Surface Return */
-        .contact {
-            background: linear-gradient(180deg, #0a1a1a 0%, #1a1a1a 100%);
-            border-left: 4px solid #4caf50;
-            text-align: center; /* Centers inline content (e.g., h2, p text) */
-            padding: 40px 20px; /* Adds padding for better spacing, adjustable */
-            max-width: 100%; /* Limits section width, adjustable */
-            margin: 0 auto; /* Centers the section itself if within a wider container */
-            display: flex; /* Uses flexbox for vertical stacking and centering */
-            flex-direction: column; /* Stacks children vertically */
-            align-items: center; /* Centers children horizontally */
-        }
-
-        .contact h2 {
-            font-size: 48px;
-            margin-bottom: 30px;
-            color: #4caf50;
-        }
-
-        .contact p {
-            font-size: 18px;
-            max-width: 600px;
-            margin-bottom: 40px;
-            max-width: 600px; /* Limits paragraph width for readability */
-            margin-left: auto; /* Centers the paragraph */
-            margin-right: auto; /* Centers the paragraph */
-        }
-
-        .contact-form {
-            max-width: 600px;
-            margin: 0 auto 30px; /* Centers form and adds space below */
-            width: 100%; /* Ensures it respects max-width */
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #888;
-            font-size: 14px;
-            font-family: 'IBM Plex Mono', 'Courier New', monospace;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-left: 0; /* Ensure label aligns with other form elements */
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 16px;
-            font-family: inherit;
-            transition: border-color 0.3s, background 0.3s;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #4caf50;
-            background: rgba(76, 175, 80, 0.05);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 150px;
-        }
-
-        .checkbox-group {
-        margin-bottom: 25px;
-        display: flex;
-        align-items: center;
-        }
-        .checkbox-group input[type="checkbox"] {
-            margin-right: 10px;
-            vertical-align: middle;
-            accent-color: #4caf50;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            padding: 2px;
-            width: 18px;
-            height: 18px;
-        }
-        .checkbox-group label {
-            color: #888;
-            font-size: 14px;
-            font-family: 'IBM Plex Mono', 'Courier New', monospace;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 0;
-        }
-        .contact-form {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .contact-form .form-group {
-            position: relative;
-            margin-bottom: 25px;
-        }
-        .contact-form input[type="checkbox"] {
-            cursor: pointer;
-            opacity: 1 !important;
-        }
-
-        .submit-btn {
-            background: #4caf50;
-            color: #fff;
-            padding: 15px 40px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s, transform 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .submit-btn:hover {
-            background: #45a049;
-            transform: translateY(-2px);
-        }
-
-        .download-cv {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 30px;
-            padding: 15px 25px;
-            background: transparent;
-            border: 2px solid #4caf50;
-            color: #4caf50;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 14px;
-        }
-
-        .download-cv:hover {
-            background: #4caf50;
-            color: #fff;
-        }
-
-        .cv-icon {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-        }
-
-        /* Footer */
-        footer {
-            background: #0a0a0a;
-            padding: 40px 150px 40px 200px;
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            section {
-                padding: 80px 30px 80px 80px;
-            }
-
-            .drill-container {
-                left: 10px;
-                width: 40px;
-            }
-
-            .depth-counter {
-                left: 5px;
-                font-size: 16px;
-            }
-
-            nav {
-                right: 15px;
-                top: 20px;
-            }
-
-            nav:hover,
-            nav.expanded {
-                width: calc(100vw - 30px);
-                right: 15px;
-            }
-
-            .nav-content {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-
-            .nav-links {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .social-icons {
-                border-left: none;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
-                padding-left: 0;
-                padding-top: 15px;
-                z-index: 1002;
-            }
-
-            .social-icon {
-                pointer-events: auto;
-            }
-
-            .hero {
-                padding: 80px 20px;
-                text-align: center;
-            }
-
-            .hero-avatar {
-                width: 150px;
-                height: 150px;
-                margin-bottom: 30px;
-                display: block; 
-                margin-left: auto; 
-                margin-right: auto;
-            }
-
-            .hero-content {
-                max-width: 100%;
-            }
-
-            .hero h1 {
-                font-size: 36px;
-            }
-
-            .hero .subtitle {
-                font-size: 18px;
-            }
-
-            .hero .mission {
-                font-size: 16px;
-            }
-
-            .hero-image {
-                display: none;
-            }
-
-            .about h2,
-            .projects h2,
-            .experience h2,
-            section h2 {
-                font-size: 32px !important;
-            }
-
-            .services-table,
-            .services-table thead,
-            .services-table tbody,
-            .services-table tr,
-            .services-table th,
-            .services-table td {
-                display: block;
-                width: 100%;
-            }
-
-            .services-table thead {
-                display: none; /* Hide table headers on mobile */
-            }
-
-            .services-table tr {
-                margin-bottom: 30px;
-                background: rgba(255, 255, 255, 0.02);
-                border: 1px solid rgba(212, 169, 66, 0.2);
-                border-radius: 8px;
-                padding: 20px;
-            }
-
-            .services-table td {
-                border: none;
-                padding: 10px 0;
-                text-align: left;
-                overflow-wrap: break-word;
-                white-space: normal;
-                word-break: break-word;
-                position: relative;
-                padding-left: 0%;
-                padding-top: 25px;
-            }
-
-            .services-table td:before {
-                content: attr(data-label);
-                position: absolute;
-                left: 0;
-                top: 0; /* Position at top instead */
-                width: auto;
-                padding-right: 10px;
-                font-weight: bold;
-                color: #d4a942;
-                font-family: 'IBM Plex Mono', 'Courier New', monospace;
-                font-size: 12px;
-                text-transform: uppercase;
-            }
-
-            .project-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .job {
-                padding: 20px;
-            }
-
-            .job h3 {
-                font-size: 22px;
-            }
-
-            .interests-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .contact {
-                padding: 60px 20px;
-            }
-
-            .contact h2 {
-                font-size: 32px;
-            }
-
-            .contact p {
-                font-size: 16px;
-            }
-
-            footer {
-                padding: 40px 20px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arthur Kisaka [v1998]</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🛢️</text></svg>">
+  <link rel="stylesheet" href="https://unpkg.com/98.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000
+    }
+
+    /* BOOT */
+    #boot {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      color: #c0c0c0;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      padding: 28px 36px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      transition: opacity .9s ease
+    }
+
+    #boot.fading {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    #boot-text {
+      white-space: pre;
+      color: #c0c0c0
+    }
+
+    #boot-text .ok {
+      color: #00c4d4
+    }
+
+    #boot-prompt {
+      margin-top: 28px;
+      color: #888;
+      font-size: 13px;
+      opacity: 0;
+      transition: opacity .4s
+    }
+
+    #boot-prompt.visible {
+      opacity: 1;
+      animation: blinkp 1.2s infinite
+    }
+
+    @keyframes blinkp {
+      50% {
+        opacity: .3
+      }
+    }
+
+    /* DESKTOP */
+    #desktop {
+      position: fixed;
+      inset: 0;
+      bottom: 28px;
+      display: none;
+      overflow: hidden
+    }
+
+    #desktop.visible {
+      display: block
+    }
+
+    #wallpaper {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      width: 100%;
+      height: 100%
+    }
+
+    #grain {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: .045;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px
+    }
+
+    /* ICONS */
+    #icons {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      max-height: calc(100% - 8px);
+      gap: 4px;
+      pointer-events: none
+    }
+
+    .d-icon {
+      width: 74px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 4px;
+      cursor: pointer;
+      pointer-events: all;
+      border: 1px solid transparent;
+      user-select: none
+    }
+
+    .d-icon:hover {
+      border: 1px dotted rgba(255, 255, 255, .45)
+    }
+
+    .d-icon.selected {
+      background: rgba(0, 96, 160, .45);
+      border: 1px solid rgba(100, 180, 255, .5)
+    }
+
+    .d-icon-img {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      image-rendering: pixelated
+    }
+
+    .d-icon-img img {
+      width: 48px;
+      height: 48px;
+      image-rendering: pixelated;
+      display: block
+    }
+
+    .d-icon-label {
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 11px;
+      color: #fff;
+      text-align: center;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, .9);
+      line-height: 1.2;
+      word-break: break-word;
+      max-width: 72px
+    }
+
+    .d-icon.selected .d-icon-label {
+      background: #0060cc
+    }
+
+    /* TASKBAR */
+    #taskbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 28px;
+      background: #c0c0c0;
+      border-top: 2px solid #fff;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 0 2px;
+      z-index: 9000
+    }
+
+    #start-btn {
+      height: 22px;
+      padding: 0 8px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      white-space: nowrap
+    }
+
+    .win-flag {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 14px;
+      height: 14px;
+      gap: 1px
+    }
+
+    .win-flag span {
+      display: block
+    }
+
+    #tb-divider {
+      width: 2px;
+      height: 22px;
+      flex-shrink: 0;
+      border-left: 1px solid #808080;
+      border-right: 1px solid #fff;
+      margin: 0 2px
+    }
+
+    #window-btns {
+      flex: 1;
+      display: flex;
+      gap: 2px;
+      overflow: hidden
+    }
+
+    .tb-btn {
+      height: 22px;
+      min-width: 80px;
+      max-width: 140px;
+      padding: 0 6px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      cursor: pointer
+    }
+
+    .tb-btn.active {
+      border-top: 2px solid #808080 !important;
+      border-left: 2px solid #808080 !important;
+      border-right: 2px solid #fff !important;
+      border-bottom: 2px solid #fff !important
+    }
+
+    #tray {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      height: 22px;
+      border: 2px solid;
+      border-color: #808080 #fff #fff #808080;
+      font-size: 11px;
+      font-family: 'MS Sans Serif', Arial, sans-serif
+    }
+
+    #tray-poem-btn {
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1
+    }
+
+    /* START MENU */
+    #start-menu {
+      position: fixed;
+      bottom: 28px;
+      left: 0;
+      width: 220px;
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #fff #808080 #808080 #fff;
+      z-index: 9500;
+      display: none;
+      flex-direction: row
+    }
+
+    #start-menu.open {
+      display: flex
+    }
+
+    .sm-sidebar {
+      width: 24px;
+      flex-shrink: 0;
+      background: linear-gradient(to top, #00609a, #1a3a6a);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 10px
+    }
+
+    .sm-sidebar-text {
+      writing-mode: vertical-lr;
+      transform: rotate(180deg);
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px;
+      font-weight: bold;
+      color: #fff;
+      letter-spacing: 1.5px
+    }
+
+    .sm-items {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 2px 0
+    }
+
+    .sm-item {
+      padding: 5px 10px;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer
+    }
+
+    .sm-item:hover {
+      background: #000080;
+      color: #fff
+    }
+
+    .sm-sep {
+      height: 1px;
+      background: #808080;
+      margin: 2px 4px
+    }
+
+    .sm-icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center
+    }
+
+    /* WINDOWS COMMON */
+    .w98 {
+      position: absolute;
+      z-index: 100;
+      display: none;
+      min-width: 180px;
+      min-height: 80px
+    }
+
+    .w98.open {
+      display: block
+    }
+
+    .w98.minimized {
+      display: none !important
+    }
+
+    .w98 .title-bar {
+      background: linear-gradient(to right, #1a4fa0 0%, #0077a8 55%, #00a8bb 100%) !important;
+      cursor: move
+    }
+
+    .w98 .title-bar.inactive {
+      background: #808080 !important
+    }
+
+    /* ABOUT */
+    #win-about {
+      top: 80px;
+      left: 120px;
+      width: 530px
+    }
+
+    .about-layout {
+      display: flex;
+      height: 320px
+    }
+
+    .about-photo-col {
+      width: 130px;
+      flex-shrink: 0;
+      background: #e8e8e8;
+      border-right: 2px solid;
+      border-color: #808080 #fff #fff #808080;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 8px;
+      gap: 8px
+    }
+
+    #about-photo-wrap {
+      width: 104px;
+      height: 104px;
+      border: 2px solid;
+      border-color: #808080 #fff #fff #808080;
+      cursor: pointer;
+      background: #c0c0c0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      overflow: hidden;
+      flex-shrink: 0
+    }
+
+    #about-photo-wrap img {
+      width: 104px;
+      height: 104px;
+      object-fit: cover;
+      display: none
+    }
+
+    .about-hint {
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 9px;
+      color: #808080;
+      text-align: center;
+      line-height: 1.3
+    }
+
+    #about-body {
+      flex: 1;
+      background: #fff;
+      padding: 8px;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.65;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      border: none;
+      outline: none;
+      resize: none
+    }
+
+    /* TERMINAL */
+    #win-terminal {
+      top: 160px;
+      left: 55px;
+      width: 540px
+    }
+
+    #terminal-body {
+      background: #000;
+      padding: 8px 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #c0c0c0;
+      height: 330px;
+      overflow-y: auto;
+      cursor: text
+    }
+
+    #t-output {
+      white-space: pre-wrap
+    }
+
+    .t-ok {
+      color: #00c4d4
+    }
+
+    .t-err {
+      color: #ff5555
+    }
+
+    .t-dim {
+      color: #666
+    }
+
+    .t-head {
+      color: #fff;
+      font-weight: 700
+    }
+
+    #t-input-line {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 2px
+    }
+
+    #t-prompt {
+      color: #c0c0c0;
+      white-space: nowrap;
+      user-select: none
+    }
+
+    #t-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #c0c0c0;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      flex: 1;
+      caret-color: #c0c0c0
+    }
+
+    /* PROJECTS */
+    #win-projects {
+      top: 60px;
+      left: 310px;
+      width: 520px
+    }
+
+    .exp-wrap {
+      display: flex;
+      height: 340px
+    }
+
+    .exp-tree {
+      width: 150px;
+      flex-shrink: 0;
+      border-right: 2px solid;
+      border-color: #808080 #fff #fff #808080;
+      overflow-y: auto;
+      padding: 4px;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px
+    }
+
+    .tree-item {
+      padding: 3px 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid transparent
+    }
+
+    .tree-item:hover,
+    .tree-item.active {
+      background: #000080;
+      color: #fff
+    }
+
+    .exp-content {
+      flex: 1;
+      padding: 10px 12px;
+      overflow-y: auto;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.55
+    }
+
+    .proj-title {
+      font-weight: bold;
+      font-size: 13px;
+      color: #000080;
+      border-bottom: 1px solid #000080;
+      margin-bottom: 6px;
+      padding-bottom: 2px
+    }
+
+    .proj-tag {
+      display: inline-block;
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #fff #808080 #808080 #fff;
+      padding: 1px 6px;
+      font-size: 10px;
+      margin: 2px 2px 2px 0
+    }
+
+    /* RESUME */
+    #win-resume {
+      top: 100px;
+      left: 410px;
+      width: 500px
+    }
+
+    #resume-body {
+      background: #fff;
+      height: 380px;
+      overflow-y: auto;
+      padding: 20px 24px;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 11px;
+      line-height: 1.55
+    }
+
+    .r-name {
+      font-size: 18px;
+      font-weight: bold;
+      color: #1a4fa0;
+      border-bottom: 2px solid #00c4d4;
+      padding-bottom: 3px;
+      margin-bottom: 2px
+    }
+
+    .r-sub {
+      color: #555;
+      font-size: 11px;
+      margin-bottom: 10px
+    }
+
+    .r-sec {
+      font-weight: bold;
+      font-size: 11px;
+      color: #000080;
+      border-bottom: 1px solid #c0c0c0;
+      margin: 10px 0 4px;
+      text-transform: uppercase;
+      letter-spacing: .6px
+    }
+
+    .r-role {
+      font-weight: bold
+    }
+
+    .r-org {
+      color: #444
+    }
+
+    .r-date {
+      color: #888;
+      font-size: 10px;
+      float: right
+    }
+
+    .r-bullets {
+      padding-left: 14px
+    }
+
+    .r-bullets li {
+      margin-bottom: 2px
+    }
+
+    /* IE LINKS */
+    #win-ie {
+      top: 130px;
+      left: 185px;
+      width: 490px
+    }
+
+    .ie-tb {
+      background: #c0c0c0;
+      padding: 3px 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border-bottom: 2px solid;
+      border-color: #808080 #fff #fff #808080
+    }
+
+    .ie-addr {
+      flex: 1;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 11px;
+      padding: 1px 4px
+    }
+
+    #ie-body {
+      background: #fff;
+      height: 310px;
+      overflow-y: auto;
+      padding: 14px 16px;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px
+    }
+
+    .ie-marquee-wrap {
+      background: #ffff99;
+      border: 2px inset #808080;
+      padding: 4px 8px;
+      margin-bottom: 10px
+    }
+
+    .ie-marquee {
+      color: #cc0000;
+      font-weight: bold;
+      font-size: 11px
+    }
+
+    .ie-h1 {
+      color: #000099;
+      font-size: 16px;
+      margin-bottom: 6px
+    }
+
+    #ie-body hr {
+      border: none;
+      border-top: 1px solid #c0c0c0;
+      margin: 8px 0
+    }
+
+    #ie-body a {
+      color: #0000cc
+    }
+
+    #ie-body a:visited {
+      color: #800080
+    }
+
+    #ie-body ul {
+      padding-left: 20px
+    }
+
+    #ie-body li {
+      margin-bottom: 4px
+    }
+
+    .ie-ctr {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 10px;
+      color: #808080
+    }
+
+    .ie-ctr-box {
+      display: inline-block;
+      background: #000;
+      color: #00cc00;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      padding: 2px 8px;
+      border: 2px inset #808080;
+      letter-spacing: 2px
+    }
+
+    /* BROWSER */
+    #win-browser {
+      top: 50px;
+      left: 80px;
+      width: 680px
+    }
+
+    #browser-tb {
+      background: #c0c0c0;
+      padding: 3px 4px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      border-bottom: 2px solid;
+      border-color: #808080 #fff #fff #808080
+    }
+
+    #browser-url {
+      flex: 1;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 11px;
+      padding: 1px 4px
+    }
+
+    #browser-frame {
+      width: 100%;
+      height: 420px;
+      border: none;
+      display: block;
+      background: #fff
+    }
+
+    /* GALLERY */
+    #win-gallery {
+      top: 90px;
+      left: 200px;
+      width: 520px
+    }
+
+    #gallery-tb {
+      background: #c0c0c0;
+      padding: 4px 6px;
+      border-bottom: 2px solid;
+      border-color: #808080 #fff #fff #808080;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    #gallery-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 8px;
+      min-height: 240px;
+      max-height: 360px;
+      overflow-y: auto;
+      background: #fff;
+      align-content: flex-start
+    }
+
+    .g-thumb {
+      position: relative;
+      cursor: pointer
+    }
+
+    .g-thumb img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      display: block;
+      border: 2px solid;
+      border-color: #fff #808080 #808080 #fff
+    }
+
+    .g-thumb:hover img {
+      border-color: #0000aa #808080 #808080 #0000aa
+    }
+
+    .g-del {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: #cc0000;
+      color: #fff;
+      border: none;
+      font-size: 10px;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1
+    }
+
+    .g-thumb:hover .g-del {
+      display: flex
+    }
+
+    .g-empty {
+      color: #808080;
+      padding: 30px;
+      text-align: center;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px;
+      width: 100%
+    }
+
+    /* RECORD SHELF */
+    #win-spotify {
+      top: 110px;
+      left: 170px;
+      width: 500px
+    }
+
+    #sp-header {
+      background: #1a1a1a;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid #000
+    }
+
+    .sp-title {
+      color: #1db954;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1px
+    }
+
+    .sp-sub {
+      color: #888;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px
+    }
+
+    #sp-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 12px;
+      min-height: 260px;
+      max-height: 340px;
+      overflow-y: auto;
+      background: #121212;
+      align-content: flex-start
+    }
+
+    .al-card {
+      width: 120px;
+      cursor: pointer;
+      position: relative
+    }
+
+    .al-art {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+      background: #282828
+    }
+
+    .al-ph {
+      width: 120px;
+      height: 120px;
+      background: #282828;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px
+    }
+
+    .al-name {
+      color: #fff;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 10px;
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .al-artist {
+      color: #888;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 9px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .al-del {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(0, 0, 0, .7);
+      color: #fff;
+      border: none;
+      font-size: 10px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center
+    }
+
+    .al-card:hover .al-del {
+      display: flex
+    }
+
+    #sp-add {
+      background: #1a1a1a;
+      padding: 6px 12px;
+      border-top: 2px solid #000;
+      display: flex;
+      gap: 6px;
+      align-items: center
+    }
+
+    #sp-aname,
+    #sp-artist {
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 11px;
+      padding: 2px 4px;
+      flex: 1
+    }
+
+    .sp-empty {
+      color: #555;
+      padding: 30px;
+      text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      width: 100%
+    }
+
+    /* RAMANI — Early Instagram UI (circa 2011) */
+    #win-ramani {
+      top: 70px;
+      left: 350px;
+      width: 320px
+    }
+
+    /* Top nav bar */
+    #ig-nav {
+      background: #1a1305;
+      height: 44px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .ig-logo {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: italic;
+      font-size: 22px;
+      color: #fff;
+      letter-spacing: -.5px;
+      line-height: 1
+    }
+
+    .ig-nav-view {
+      background: none;
+      border: 1px solid rgba(255, 255, 255, .45);
+      color: #fff;
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      padding: 3px 8px;
+      cursor: pointer;
+      border-radius: 3px
+    }
+
+    .ig-nav-view:hover {
+      background: rgba(255, 255, 255, .1)
+    }
+
+    .ig-nav-back {
+      font-size: 16px;
+      color: rgba(255, 255, 255, .7);
+      cursor: pointer;
+      user-select: none;
+      padding: 4px
+    }
+
+    /* Profile section */
+    #ig-profile {
+      background: #fafafa;
+      padding: 14px 12px 10px;
+      border-bottom: 1px solid #dbdbdb
+    }
+
+    #ig-profile-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 10px
+    }
+
+    #ig-avatar {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background: #e0d5c5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      flex-shrink: 0;
+      overflow: hidden;
+      border: 2px solid #dbdbdb
+    }
+
+    #ig-avatar img {
+      width: 66px;
+      height: 66px;
+      object-fit: cover;
+      border-radius: 50%;
+      display: none
+    }
+
+    #ig-profile-info {
+      flex: 1;
+      padding-top: 4px
+    }
+
+    .ig-username {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      color: #262626;
+      margin-bottom: 7px
+    }
+
+    .ig-add-btn {
+      display: inline-block;
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid #c0b090;
+      padding: 4px 12px;
+      color: #262626;
+      cursor: pointer;
+      background: #fafafa;
+      border-radius: 3px
+    }
+
+    .ig-add-btn:hover {
+      background: #f0ece3
+    }
+
+    /* Stats bar */
+    #ig-stats {
+      display: flex;
+      border-top: 1px solid #dbdbdb;
+      border-bottom: 1px solid #dbdbdb;
+      margin-bottom: 8px
+    }
+
+    .ig-stat {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0
+    }
+
+    .ig-stat+.ig-stat {
+      border-left: 1px solid #dbdbdb
+    }
+
+    .ig-stat-n {
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #262626;
+      display: block
+    }
+
+    .ig-stat-l {
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      color: #999;
+      display: block;
+      margin-top: 1px
+    }
+
+    /* Bio */
+    #ig-bio {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      color: #262626;
+      line-height: 1.5
+    }
+
+    .ig-bio-name {
+      font-weight: 700;
+      display: block;
+      margin-bottom: 1px
+    }
+
+    /* Photo grid */
+    #ig-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+      background: #dbdbdb;
+      max-height: 288px;
+      overflow-y: auto
+    }
+
+    .ig-cell {
+      position: relative;
+      padding-bottom: 100%;
+      overflow: hidden;
+      background: #fafafa;
+      cursor: pointer
+    }
+
+    .ig-cell img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .ig-cell-del {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      background: rgba(0, 0, 0, .5);
+      color: #fff;
+      border: none;
+      font-size: 10px;
+      width: 17px;
+      height: 17px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border-radius: 2px
+    }
+
+    .ig-cell:hover .ig-cell-del {
+      display: flex
+    }
+
+    .ig-ph {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      background: #fafafa;
+      color: #c8b89a
+    }
+
+    /* Bottom tab bar */
+    #ig-tabs {
+      background: #fafafa;
+      border-top: 1px solid #dbdbdb;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      height: 44px
+    }
+
+    .ig-tab {
+      font-size: 20px;
+      cursor: pointer;
+      opacity: .5;
+      padding: 4px 8px;
+      line-height: 1
+    }
+
+    .ig-tab:hover,
+    .ig-tab.on {
+      opacity: 1
+    }
+
+    /* WILDCAT */
+    #win-wildcat {
+      top: 210px;
+      left: 260px;
+      width: 340px
+    }
+
+    #wc-body {
+      background: #c0c0c0;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px
+    }
+
+    #wc-hdr {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #c0c0c0;
+      border: 3px solid;
+      border-color: #808080 #fff #fff #808080;
+      padding: 4px 8px;
+      width: 100%;
+      justify-content: space-between
+    }
+
+    .wc-digit {
+      background: #000;
+      color: #ff0000;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: bold;
+      font-size: 22px;
+      padding: 2px 6px;
+      min-width: 54px;
+      text-align: center;
+      border: 2px solid;
+      border-color: #808080 #fff #fff #808080;
+      letter-spacing: 2px
+    }
+
+    #wc-face {
+      font-size: 22px;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer
+    }
+
+    #wc-board {
+      display: grid;
+      border: 3px solid;
+      border-color: #808080 #fff #fff #808080
+    }
+
+    .wc-cell {
+      width: 26px;
+      height: 26px;
+      border: 2px solid;
+      border-color: #fff #808080 #808080 #fff;
+      background: #c0c0c0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none
+    }
+
+    .wc-cell.rev {
+      border-color: #808080 #fff #fff #808080
+    }
+
+    .wc-cell.dry-hit {
+      background: #8b4513 !important
+    }
+
+    .wc-cell.dry-show {
+      background: #d2b48c
+    }
+
+    .wc-n3 {
+      color: #cc0000
+    }
+
+    .wc-n4 {
+      color: #000088
+    }
+
+    .wc-n5 {
+      color: #880000
+    }
+
+    .wc-n6 {
+      color: #007777
+    }
+
+    .wc-n7 {
+      color: #000
+    }
+
+    .wc-n8 {
+      color: #808080
+    }
+
+    #wc-status {
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 11px;
+      color: #000;
+      text-align: center;
+      max-width: 300px
+    }
+
+    #wc-diff {
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    #wc-legend {
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 10px;
+      color: #444;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center
+    }
+
+    /* RECYCLE */
+    #win-recycle {
+      top: 180px;
+      left: 155px;
+      width: 440px
+    }
+
+    #recycle-body {
+      background: #fff;
+      padding: 10px 14px;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.7;
+      height: 280px;
+      overflow-y: auto
+    }
+
+    /* ABOUT PC */
+    #win-aboutpc {
+      top: 220px;
+      left: 320px;
+      width: 360px
+    }
+
+    #apc-body {
+      padding: 16px;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.8;
+      background: #c0c0c0
+    }
+
+    .apc-logo {
+      font-size: 36px;
+      text-align: center;
+      margin-bottom: 10px
+    }
+
+    .apc-tbl {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    .apc-tbl td {
+      padding: 2px 4px;
+      vertical-align: top
+    }
+
+    .apc-tbl td:first-child {
+      color: #555;
+      width: 120px
+    }
+
+    /* CONTEXT MENU */
+    #ctx-menu {
+      position: fixed;
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #fff #808080 #808080 #fff;
+      z-index: 9800;
+      display: none;
+      min-width: 170px;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px
+    }
+
+    #ctx-menu.open {
+      display: block
+    }
+
+    .ctx-item {
+      padding: 4px 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .ctx-item:hover {
+      background: #000080;
+      color: #fff
+    }
+
+    .ctx-sep {
+      height: 1px;
+      background: #808080;
+      margin: 2px 6px
+    }
+
+    /* POEMS PANEL */
+    #poems-panel {
+      position: fixed;
+      bottom: 30px;
+      right: 4px;
+      width: 290px;
+      background: #c0c0c0;
+      border: 2px solid;
+      border-color: #fff #808080 #808080 #fff;
+      z-index: 9600;
+      display: none;
+      flex-direction: column;
+      max-height: 380px
+    }
+
+    #poems-panel.open {
+      display: flex
+    }
+
+    #poems-ptb {
+      background: linear-gradient(to right, #1a4fa0, #00a8bb);
+      padding: 3px 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    #poems-ptb span {
+      color: #fff;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 11px;
+      font-weight: bold
+    }
+
+    #poems-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px;
+      min-height: 60px
+    }
+
+    .poem-card {
+      border: 2px solid;
+      border-color: #808080 #fff #fff #808080;
+      margin-bottom: 4px;
+      background: #fff
+    }
+
+    .poem-head {
+      background: #000080;
+      color: #fff;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 2px 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .poem-body {
+      padding: 6px;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 11px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      color: #000;
+      max-height: 120px;
+      overflow-y: auto
+    }
+
+    .poem-del {
+      font-size: 9px;
+      cursor: pointer;
+      color: #fff;
+      background: none;
+      border: none;
+      padding: 0 2px
+    }
+
+    .poem-date {
+      font-size: 9px;
+      color: #aaa
+    }
+
+    #poems-add-bar {
+      padding: 6px;
+      border-top: 2px solid;
+      border-color: #808080 #fff #fff #808080;
+      display: flex;
+      gap: 4px
+    }
+
+    .poems-empty {
+      color: #808080;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 11px;
+      padding: 12px;
+      text-align: center
+    }
+
+    /* BLOG */
+    #win-blog {
+      top: 70px;
+      left: 160px;
+      width: 560px
+    }
+
+    #blog-tb {
+      background: #c0c0c0;
+      padding: 3px 6px;
+      border-bottom: 2px solid;
+      border-color: #808080 #fff #fff #808080;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    #blog-posts {
+      height: 380px;
+      overflow-y: auto;
+      background: #fff;
+      padding: 0
+    }
+
+    .blog-post {
+      padding: 10px 14px;
+      border-bottom: 1px solid #e0e0e0;
+      cursor: pointer;
+      font-family: 'MS Sans Serif', Arial, sans-serif
+    }
+
+    .blog-post:hover {
+      background: #f0f0ff
+    }
+
+    .blog-post-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #000080;
+      margin-bottom: 3px
+    }
+
+    .blog-post-meta {
+      font-size: 10px;
+      color: #808080;
+      margin-bottom: 5px
+    }
+
+    .blog-post-excerpt {
+      font-size: 11px;
+      color: #333;
+      line-height: 1.5
+    }
+
+    .blog-post-link {
+      font-size: 11px;
+      color: #0000cc;
+      margin-top: 4px;
+      display: block
+    }
+
+    .blog-loading {
+      padding: 30px;
+      text-align: center;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px;
+      color: #808080
+    }
+
+    .blog-err {
+      padding: 20px 14px;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 12px
+    }
+
+    /* Backend source badge */
+    .be-badge {
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      font-size: 9px;
+      background: #000080;
+      color: #fff;
+      padding: 1px 4px;
+      margin-left: 4px;
+      vertical-align: middle
+    }
+
+    /* SCREENSAVER */
+    #screensaver {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 9900;
+      display: none;
+      cursor: none
+    }
+
+    #screensaver.on {
+      display: block
+    }
+
+    #ss-canvas {
+      width: 100%;
+      height: 100%;
+      display: block
+    }
+
+    /* MOBILE */
+    #mob-warn {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000080;
+      color: #fff;
+      font-family: 'MS Sans Serif', Arial, sans-serif;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 32px;
+      z-index: 99999;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    @media(max-width:768px) {
+      #mob-warn {
+        display: flex
+      }
+
+      #boot,
+      #desktop,
+      #taskbar,
+      #screensaver,
+      #poems-panel {
+        display: none !important
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <!-- Drill Bit & Depth Counter -->
-    <div class="drill-container">
-        <div class="drill-string" id="drillString"></div>
-        <!-- Replace the src below with your drill bit image URL -->
-        <img class="drill-bit" src="images\Drill_Bit 60px.svg" alt="Drill Bit">
+
+  <div id="mob-warn">
+    <div style="font-size:48px">🖥️</div>
+    <h2 style="font-size:16px">ARTHUR KISAKA [v1998]</h2>
+    <p style="font-size:13px;max-width:300px;line-height:1.6">This desktop requires a larger screen.</p>
+    <p style="font-size:11px;color:#aaaaff;margin-top:8px">Windows 98 was not designed for mobile.<br>Neither was this.
+    </p>
+  </div>
+
+  <div id="boot">
+    <div id="boot-text"></div>
+    <div id="boot-prompt">▶ Click anywhere to launch Windows 98</div>
+  </div>
+
+  <div id="desktop">
+    <svg id="wallpaper" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 860" preserveAspectRatio="xMidYMid slice">
+      <rect width="1440" height="860" fill="#050b18" />
+      <path d="M0,100 Q240,88 480,106 T960,98 T1440,104 L1440,0 L0,0 Z" fill="#060e1e" />
+      <path d="M0,210 Q240,198 480,216 T960,206 T1440,213 L1440,100 Q1200,112 960,98 T480,106 T0,100 Z"
+        fill="#003843" />
+      <path d="M0,340 Q240,326 480,344 T960,332 T1440,339 L1440,213 Q1200,220 960,213 T480,216 T0,210 Z"
+        fill="#1a3560" />
+      <path d="M0,480 Q240,466 480,484 T960,472 T1440,479 L1440,339 Q1200,346 960,339 T480,344 T0,340 Z"
+        fill="#004d5e" />
+      <path d="M0,620 Q240,606 480,624 T960,612 T1440,619 L1440,479 Q1200,486 960,479 T480,484 T0,480 Z"
+        fill="#0f1e3d" />
+      <path d="M0,760 Q240,746 480,764 T960,752 T1440,759 L1440,619 Q1200,626 960,619 T480,624 T0,620 Z"
+        fill="#002630" />
+      <rect x="0" y="750" width="1440" height="110" fill="#020810" />
+      <path d="M0,100 Q240,88 480,106 T960,98 T1440,104" stroke="#00c4d4" stroke-width=".7" fill="none" opacity=".35" />
+      <path d="M0,210 Q240,198 480,216 T960,206 T1440,213" stroke="#3B5BDB" stroke-width=".6" fill="none"
+        opacity=".28" />
+      <path d="M0,340 Q240,326 480,344 T960,332 T1440,339" stroke="#00c4d4" stroke-width=".7" fill="none"
+        opacity=".3" />
+      <path d="M0,480 Q240,466 480,484 T960,472 T1440,479" stroke="#1a4fa0" stroke-width=".6" fill="none"
+        opacity=".25" />
+      <path d="M0,620 Q240,606 480,624 T960,612 T1440,619" stroke="#00c4d4" stroke-width=".5" fill="none"
+        opacity=".2" />
+      <text x="70" y="162" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#00c4d4" opacity=".28"
+        transform="rotate(-4,70,162)">SURFACE CASING</text>
+      <text x="340" y="278" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#5577dd" opacity=".22"
+        transform="rotate(-3,340,278)">UPPER SHALE</text>
+      <text x="620" y="415" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#00c4d4" opacity=".22"
+        transform="rotate(-4,620,415)">RESERVOIR ZONE · φ=18%</text>
+      <text x="180" y="556" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#1a6aaf" opacity=".2"
+        transform="rotate(-2,180,556)">TIGHT CARBONATE</text>
+      <text x="800" y="694" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#00c4d4" opacity=".18"
+        transform="rotate(-3,800,694)">DEEP MARINE SHALE</text>
+      <text x="1420" y="103" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#00c4d4" opacity=".38"
+        text-anchor="end">0m</text>
+      <text x="1420" y="213" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#00c4d4" opacity=".35"
+        text-anchor="end">300m</text>
+      <text x="1420" y="342" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#00c4d4" opacity=".32"
+        text-anchor="end">800m</text>
+      <text x="1420" y="482" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#00c4d4" opacity=".28"
+        text-anchor="end">1600m</text>
+      <text x="1420" y="622" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#00c4d4" opacity=".24"
+        text-anchor="end">2500m</text>
+    </svg>
+    <div id="grain"></div>
+
+    <div id="icons">
+      <div class="d-icon" ondblclick="WM.open('about')">
+        <div class="d-icon-img"><img src="https://win98icons.alexmeub.com/icons/png/notepad_file-0.png"
+            onerror="this.outerHTML='📄'" alt=""></div>
+        <div class="d-icon-label">About Arthur.txt</div>
+      </div>
+      <div class="d-icon" ondblclick="WM.open('projects')">
+        <div class="d-icon-img"><img src="https://win98icons.alexmeub.com/icons/png/computer_explorer-4.png"
+            onerror="this.outerHTML='💻'" alt=""></div>
+        <div class="d-icon-label">My Projects</div>
+      </div>
+      <div class="d-icon" ondblclick="WM.open('resume')">
+        <div class="d-icon-img"><img src="https://win98icons.alexmeub.com/icons/png/document_word-0.png"
+            onerror="this.outerHTML='📝'" alt=""></div>
+        <div class="d-icon-label">Resume.doc</div>
+      </div>
+      <div class="d-icon" ondblclick="WM.open('terminal')">
+        <div class="d-icon-img"><img src="https://win98icons.alexmeub.com/icons/png/ms_dos-4.png"
+            onerror="this.outerHTML='⬛'" alt=""></div>
+        <div class="d-icon-label">MS-DOS Prompt</div>
+      </div>
+      <div class="d-icon" ondblclick="WM.open('browser')">
+        <div class="d-icon-img"><img src="https://win98icons.alexmeub.com/icons/png/msie1-1.png"
+            onerror="this.outerHTML='🌐'" alt=""></div>
+        <div class="d-icon-label">Arthur's Browser</div>
+      </div>
+      <div class="d-icon" ondblclick="WM.open('gallery')">
+        <div class="d-icon-img"><img src="https://win98icons.alexmeub.com/icons/png/camera-0.png"
+            onerror="this.outerHTML='🖼️'" alt=""></div>
+        <div class="d-icon-label">Gallery</div>
+      </div>
+      <div class="d-icon" ondblclick="WM.open('spotify')">
+        <div class="d-icon-img"><img src="https://win98icons.alexmeub.com/icons/png/media_player-4.png"
+            onerror="this.outerHTML='🎵'" alt=""></div>
+        <div class="d-icon-label">Record Shelf</div>
+      </div>
+      <div class="d-icon" ondblclick="WM.open('ramani')">
+        <div class="d-icon-img" style="font-size:36px">🍯</div>
+        <div class="d-icon-label">Ramani Honey</div>
+      </div>
+      <div class="d-icon" ondblclick="WM.open('wildcat')">
+        <div class="d-icon-img"><img src="https://win98icons.alexmeub.com/icons/png/mines-2.png"
+            onerror="this.outerHTML='🛢️'" alt=""></div>
+        <div class="d-icon-label">Wildcat! Oil Survey</div>
+      </div>
+      <div class="d-icon" ondblclick="WM.open('blog')">
+        <div class="d-icon-img"><img src="https://win98icons.alexmeub.com/icons/png/write_wordpad-0.png"
+            onerror="this.outerHTML='✍️'" alt=""></div>
+        <div class="d-icon-label">Blog</div>
+      </div>
+      <div class="d-icon" ondblclick="WM.open('recycle')">
+        <div class="d-icon-img"><img src="https://win98icons.alexmeub.com/icons/png/recycle_bin_empty-3.png"
+            onerror="this.outerHTML='🗑️'" alt=""></div>
+        <div class="d-icon-label">Recycle Bin</div>
+      </div>
     </div>
 
-    <div class="depth-counter">
-        <div id="depth">0</div>
-        <span class="depth-label">METRES</span>
+    <div id="ctx-menu">
+      <div class="ctx-item" onclick="WM.open('about');hideCtx()">📄 About Arthur.txt</div>
+      <div class="ctx-item" onclick="WM.open('projects');hideCtx()">💻 My Projects</div>
+      <div class="ctx-item" onclick="WM.open('terminal');hideCtx()">⬛ MS-DOS Prompt</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" onclick="hideCtx();location.reload()">🔄 Refresh</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" onclick="WM.open('aboutpc');hideCtx()">🖥️ About This Computer</div>
     </div>
+  </div>
 
-    <!-- Navigation -->
-    <nav id="mainNav">
-        <div class="nav-toggle" onclick="toggleNav()">
-            <div class="log-line"></div>
-            <div class="log-line"></div>
-            <div class="log-line"></div>
+  <!-- TASKBAR -->
+  <div id="taskbar">
+    <button id="start-btn">
+      <span class="win-flag">
+        <span style="background:#e8221e"></span><span style="background:#18a820"></span>
+        <span style="background:#1a64d4"></span><span style="background:#f0c020"></span>
+      </span>Start
+    </button>
+    <div id="tb-divider"></div>
+    <div id="window-btns"></div>
+    <div id="tray">
+      <span id="tray-poem-btn" title="Updates &amp; Poems">📜</span>
+      <span title="Nairobi">🇰🇪</span>
+      <span id="tb-clock">00:00</span>
+    </div>
+  </div>
+
+  <!-- START MENU -->
+  <div id="start-menu">
+    <div class="sm-sidebar"><span class="sm-sidebar-text">Arthur Kisaka v1998</span></div>
+    <div class="sm-items">
+      <div class="sm-item" onclick="WM.open('about');closeMenu()"> <span class="sm-icon">📄</span>About Arthur.txt</div>
+      <div class="sm-item" onclick="WM.open('projects');closeMenu()"> <span class="sm-icon">💻</span>My Projects</div>
+      <div class="sm-item" onclick="WM.open('resume');closeMenu()"> <span class="sm-icon">📝</span>Resume.doc</div>
+      <div class="sm-item" onclick="WM.open('terminal');closeMenu()"> <span class="sm-icon">⬛</span>MS-DOS Prompt</div>
+      <div class="sm-item" onclick="WM.open('browser');closeMenu()"> <span class="sm-icon">🌐</span>Arthur's Browser
+      </div>
+      <div class="sm-item" onclick="WM.open('gallery');closeMenu()"> <span class="sm-icon">🖼️</span>Gallery</div>
+      <div class="sm-item" onclick="WM.open('spotify');closeMenu()"> <span class="sm-icon">🎵</span>Record Shelf</div>
+      <div class="sm-item" onclick="WM.open('ramani');closeMenu()"> <span class="sm-icon">🍯</span>Ramani Honey</div>
+      <div class="sm-item" onclick="WM.open('wildcat');closeMenu()"> <span class="sm-icon">🛢️</span>Wildcat! Oil Survey
+      </div>
+      <div class="sm-item" onclick="WM.open('blog');closeMenu()"> <span class="sm-icon">✍️</span>Blog</div>
+      <div class="sm-sep"></div>
+      <div class="sm-item" onclick="WM.open('recycle');closeMenu()"> <span class="sm-icon">🗑️</span>Recycle Bin</div>
+      <div class="sm-item" onclick="WM.open('aboutpc');closeMenu()"> <span class="sm-icon">🖥️</span>About This Computer
+      </div>
+      <div class="sm-sep"></div>
+      <div class="sm-item" onclick="closeMenu();SS.start()"> <span class="sm-icon">💤</span>Screensaver</div>
+      <div class="sm-item" onclick="location.reload()"> <span class="sm-icon">🔄</span>Restart</div>
+    </div>
+  </div>
+
+  <!-- POEMS PANEL -->
+  <div id="poems-panel">
+    <div id="poems-ptb">
+      <span>📜 Updates &amp; Poems</span>
+      <button style="font-size:11px;padding:0 4px;height:16px;background:#808080;border:none;color:#fff;cursor:pointer"
+        onclick="togglePoems()">×</button>
+    </div>
+    <div id="poems-list"></div>
+    <div id="poems-add-bar">
+      <button onclick="Poems.add()" style="font-size:11px;padding:1px 10px">+ Add</button>
+      <span style="font-family:'MS Sans Serif',Arial,sans-serif;font-size:10px;color:#555">Poem or update</span>
+    </div>
+  </div>
+
+  <!-- ═══ WINDOWS ═══════════════════════════════════════════════ -->
+
+  <!-- ABOUT -->
+  <div id="win-about" class="w98 window" data-wid="about">
+    <div class="title-bar">
+      <div class="title-bar-text">About Arthur.txt — Notepad</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" onclick="WM.minimize('about')"></button>
+        <button aria-label="Maximize" onclick="WM.maximize('about')"></button>
+        <button aria-label="Close" onclick="WM.close('about')"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding:0">
+      <div class="about-layout">
+        <div class="about-photo-col">
+          <div id="about-photo-wrap" onclick="document.getElementById('about-ph-inp').click()"
+            title="Click to set photo">
+            <span id="about-ph-emoji">👤</span>
+            <img id="about-ph-img" src="" alt="">
+          </div>
+          <input id="about-ph-inp" type="file" accept="image/*" style="display:none" onchange="setAboutPhoto(this)">
+          <div class="about-hint">Click to<br>set photo</div>
+          <div
+            style="font-family:'MS Sans Serif',Arial,sans-serif;font-size:10px;font-weight:bold;color:#000080;text-align:center;margin-top:4px">
+            Arthur Kisaka</div>
+          <div
+            style="font-family:'MS Sans Serif',Arial,sans-serif;font-size:9px;color:#555;text-align:center;line-height:1.4">
+            PE · AI · Bees<br>Nairobi 🇰🇪</div>
         </div>
-        <div class="nav-content">
-            <div class="nav-links">
-                <a href="#hero">Surface</a>
-                <a href="#about">About</a>
-                <a href="#experience">Experience</a>
-                <a href="#projects">Projects</a>
-                <a href="#interests">Interests</a>
-                <a href="#contact">Contact</a>
-            </div>
-            <div class="social-icons">
-                <a href="https://github.com/Arturo-K" target="_blank" class="social-icon" title="GitHub">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                    </svg>
-                </a>
-                <a href="https://www.linkedin.com/in/arthur-k-1284b7121/" target="_blank" class="social-icon" title="LinkedIn">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                    </svg>
-                </a>
-                <a href="https://huggingface.co/MurumbaKisaka" target="_blank" class="social-icon" title="Hugging Face">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
-                    </svg>
-                </a>
-            </div>
+        <textarea id="about-body" readonly>ARTHUR KISAKA [v1.998]
+══════════════════════════════════════
+
+Petroleum Engineer.
+Agentic AI Consultant.
+Apiarist.
+Based in Nairobi, Kenya.
+
+─────────────────────────────────────
+EDUCATION
+─────────────────────────────────────
+B.Sc. Petroleum Engineering
+  Kenyatta University
+
+Certificate in Beekeeping
+  National Beekeeping Institute (2025)
+
+─────────────────────────────────────
+CURRENT OPERATIONS
+─────────────────────────────────────
+Esambo Apiculture Ltd   25 colonies
+Ramani Honey            Commercial brand
+Kisima Consulting       AI & engineering
+SPE Kenya / DSEATS      Geo Datathon
+                        SAASC 2026 · July 22–24
+
+─────────────────────────────────────
+NOTES
+─────────────────────────────────────
+I build things that find oil, automate
+workflows, and make honey. Not necessarily
+in that order.
+
+This site runs on '98 because I was
+born in '98.
+
+Open MS-DOS Prompt → type SKILLS.
+─────────────────────────────────────
+Last modified:  1998-07-XX
+</textarea>
+      </div>
+    </div>
+    <div class="status-bar">
+      <p class="status-bar-field">Read only</p>
+      <p class="status-bar-field">Nairobi, Kenya</p>
+    </div>
+  </div>
+
+  <!-- PROJECTS -->
+  <div id="win-projects" class="w98 window" data-wid="projects">
+    <div class="title-bar">
+      <div class="title-bar-text">My Projects — Explorer</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" onclick="WM.minimize('projects')"></button>
+        <button aria-label="Maximize" onclick="WM.maximize('projects')"></button>
+        <button aria-label="Close" onclick="WM.close('projects')"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding:0">
+      <div class="exp-wrap">
+        <div class="exp-tree">
+          <div class="tree-item active" data-proj="cysmic" onclick="showProj('cysmic')">📁 CYSMIC V3</div>
+          <div class="tree-item" data-proj="ramani" onclick="showProj('ramani')">📁 Ramani Honey</div>
+          <div class="tree-item" data-proj="datathon" onclick="showProj('datathon')">📁 Geo Datathon</div>
+          <div class="tree-item" data-proj="jaza" onclick="showProj('jaza')">📁 JAZA</div>
+          <div class="tree-item" data-proj="portfolio" onclick="showProj('portfolio')">📁 arthurkisaka.site</div>
         </div>
-    </nav>
+        <div class="exp-content" id="proj-content"></div>
+      </div>
+    </div>
+    <div class="status-bar">
+      <p class="status-bar-field" id="proj-status">5 object(s)</p>
+    </div>
+  </div>
 
-    <!-- Hero Section -->
-    <section class="hero" id="hero">
-        <img src="images\arthur_hero_2.svg" alt="Arthur Kisaka" class="hero-avatar">
-
-        <div class="hero-content">
-            <p class="mission">Hey, welcome to my corner of the internet. I am</p>
-            <h1>ARTHUR KISAKA</h1>
-            <div class="subtitle">Agentic AI Developer & Innovations Consultant</div>
-            <p class="mission">
-                I build AI-powered solutions for complex systems in petroleum engineering, food manufacturing, product innovation, energy and project management.
-                My approach: combine deep industry expertise with agentic AI to optimize what matters most. Let's explore where traditional industries meet emerging technology.
-            </p>
+  <!-- RESUME -->
+  <div id="win-resume" class="w98 window" data-wid="resume">
+    <div class="title-bar">
+      <div class="title-bar-text">Resume.doc — Arthur Kisaka</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" onclick="WM.minimize('resume')"></button>
+        <button aria-label="Maximize" onclick="WM.maximize('resume')"></button>
+        <button aria-label="Close" onclick="WM.close('resume')"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding:0">
+      <div style="background:#c0c0c0;padding:4px;border-bottom:2px solid #808080;display:flex;gap:4px">
+        <button style="font-size:11px;padding:1px 8px" onclick="window.print()">🖨️ Print</button>
+      </div>
+      <div id="resume-body">
+        <div class="r-name">Arthur Kisaka</div>
+        <div class="r-sub">Petroleum Engineer · Agentic AI Consultant · Apiarist &nbsp;|&nbsp; Nairobi, Kenya<br>+254
+          796 841 404 &nbsp;|&nbsp; m.arthurkisaka@gmail.com &nbsp;|&nbsp; arthurkisaka.site</div>
+        <div class="r-sec">Education</div>
+        <div class="r-row"><span class="r-role">B.Sc. Petroleum Engineering</span> — <span class="r-org">Kenyatta
+            University</span><span class="r-date">2019–2024</span>
+          <div style="clear:both"></div>
         </div>
-    </section>
+        <div class="r-row"><span class="r-role">Certificate in Beekeeping</span> — <span class="r-org">National
+            Beekeeping Institute</span><span class="r-date">2025</span>
+          <div style="clear:both"></div>
+        </div>
+        <div class="r-sec">Experience</div>
+        <div class="r-row"><span class="r-role">Founder & Consultant</span> — <span class="r-org">Kisima
+            Consulting</span><span class="r-date">2024–Present</span>
+          <div style="clear:both"></div>
+          <ul class="r-bullets">
+            <li>Agentic AI system design for energy sector clients</li>
+            <li>LLM orchestration, workflow automation, Streamlit tooling</li>
+          </ul>
+        </div>
+        <div class="r-row"><span class="r-role">MD / Founder</span> — <span class="r-org">Esambo Apiculture Ltd / Ramani
+            Honey</span><span class="r-date">2023–Present</span>
+          <div style="clear:both"></div>
+          <ul class="r-bullets">
+            <li>Managing 25 bee colonies, Western Kenya</li>
+            <li>Commercial honey brand — production, QC, logistics</li>
+          </ul>
+        </div>
+        <div class="r-row"><span class="r-role">Project Management</span> — <span class="r-org">Premier Foods (Peptang)
+            / African Originals</span><span class="r-date">2022–2024</span>
+          <div style="clear:both"></div>
+        </div>
+        <div class="r-row"><span class="r-role">DSEATS Lead / Datathon Organiser</span> — <span class="r-org">SPE Kenya
+            Section</span><span class="r-date">2024–Present</span>
+          <div style="clear:both"></div>
+          <ul class="r-bullets">
+            <li>Organising SPE Africa Geothermal Datathon, SAASC 2026</li>
+            <li>Stakeholders: GDC, KenGen, SPE Africa, DSEATS Global</li>
+          </ul>
+        </div>
+        <div class="r-sec">Technical Skills</div>
+        <div class="r-row"><b>Petroleum:</b> Reservoir analysis, LAS/DLIS interpretation, production optimisation,
+          geothermal systems<br><b>AI/Dev:</b> Python, Claude API, Ollama, Streamlit, LangChain, GitHub
+          Pages<br><b>Data:</b> Plotly, Power BI, Excel, Sankey visualisation</div>
+        <div class="r-sec">Interests</div>
+        <div class="r-row">Apiculture · Film · Agricultural entrepreneurship · Subsurface data science</div>
+      </div>
+    </div>
+  </div>
 
-    <!-- About Section -->
-    <section class="about" id="about">
-        <h2>About Services</h2>
-        <table class="services-table">
-            <thead>
-                <tr>
-                    <th>Service</th>
-                    <th>Description</th>
-                    <th>Example Impact</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td data-label="Service">Workflow Automation</td>
-                    <td data-label="Description">n8n-based integrations for business processes</td>
-                    <td data-label="Example Impact">Automated CRM and newsletters, saving 20 hours/week</td>
-                </tr>
-                <tr>
-                    <td data-label="Service">Agentic AI Development</td>
-                    <td data-label="Description">Custom AI agents & tools for data retreival and interpretation (e.g., lithology from well logs)</td>
-                    <td data-label="Example Impact">Reduced analysis time by 50% in exploration projects</td>
-                </tr>
-                <tr>
-                    <td data-label="Service">Manufacturing Systems Optimization</td>
-                    <td data-label="Description">Layout design, process audit and optimisation</td>
-                    <td data-label="Example Impact">20% throughput increase in manufacturing</td>
-                </tr>
-                <tr>
-                    <td data-label="Service">Product Innovations Advisory</td>
-                    <td data-label="Description">Product innovations(beverage/packaging) from idea to GTM strategy</td>
-                    <td data-label="Example Impact">Introduced new product/packaging innovation in 9 months with ROI of 2 years</td>
-                </tr>
-            </tbody>
+  <!-- TERMINAL -->
+  <div id="win-terminal" class="w98 window" data-wid="terminal">
+    <div class="title-bar">
+      <div class="title-bar-text">MS-DOS Prompt</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" onclick="WM.minimize('terminal')"></button>
+        <button aria-label="Maximize" onclick="WM.maximize('terminal')"></button>
+        <button aria-label="Close" onclick="WM.close('terminal')"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding:0">
+      <div id="terminal-body" onclick="document.getElementById('t-input').focus()">
+        <div id="t-output"></div>
+        <div id="t-input-line">
+          <span id="t-prompt">C:\ARTHUR\Desktop&gt;&nbsp;</span>
+          <input id="t-input" type="text" autocomplete="off" autocorrect="off" spellcheck="false"
+            onkeydown="termKey(event)">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IE LINKS PAGE -->
+  <div id="win-ie" class="w98 window" data-wid="ie">
+    <div class="title-bar">
+      <div class="title-bar-text">Arthur Kisaka Online — Links</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" onclick="WM.minimize('ie')"></button>
+        <button aria-label="Maximize" onclick="WM.maximize('ie')"></button>
+        <button aria-label="Close" onclick="WM.close('ie')"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding:0">
+      <div class="ie-tb">
+        <input class="ie-addr" type="text" value="http://arthurkisaka.site" readonly>
+        <button style="font-size:11px;padding:1px 8px" onclick="WM.open('browser')">Browse →</button>
+      </div>
+      <div id="ie-body">
+        <div class="ie-marquee-wrap">
+          <div class="ie-marquee">★ Welcome to Arthur Kisaka's Corner of the Internet ★ Est. 1998 ★ Nairobi, Kenya ★
+          </div>
+        </div>
+        <div class="ie-h1">🌐 Arthur Kisaka — Online</div>
+        <hr>
+        <ul>
+          <li><a href="https://arthurkisaka.site" target="_blank">arthurkisaka.site</a> — Portfolio</li>
+          <li><a href="https://github.com/arthurkisaka" target="_blank">github.com/arthurkisaka</a> — Code</li>
+          <li><a href="https://linkedin.com/in/arthurkisaka" target="_blank">LinkedIn</a> — Professional</li>
+          <li><a href="mailto:m.arthurkisaka@gmail.com">m.arthurkisaka@gmail.com</a></li>
+          <li><a href="tel:+254796841404">+254 796 841 404</a></li>
+        </ul>
+        <hr>
+        <p style="font-size:10px;color:#808080">Best viewed at 1024×768. This site uses bees.</p>
+        <div class="ie-ctr">
+          <div class="ie-ctr-box" id="visitor-count">001998</div><br><span style="font-size:10px">visitors since
+            1998</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BROWSER -->
+  <div id="win-browser" class="w98 window" data-wid="browser">
+    <div class="title-bar">
+      <div class="title-bar-text">Arthur's Browser</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" onclick="WM.minimize('browser')"></button>
+        <button aria-label="Maximize" onclick="WM.maximize('browser')"></button>
+        <button aria-label="Close" onclick="WM.close('browser')"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding:0">
+      <div id="browser-tb">
+        <button style="font-size:11px;padding:1px 6px" onclick="browserBack()">◀</button>
+        <button style="font-size:11px;padding:1px 6px" onclick="browserFwd()">▶</button>
+        <button style="font-size:11px;padding:1px 6px" onclick="browserHome()">🏠</button>
+        <input id="browser-url" type="text" value="https://en.wikipedia.org/wiki/Petroleum_engineering"
+          onkeydown="if(event.key==='Enter')browserGo()">
+        <button style="font-size:11px;padding:1px 8px" onclick="browserGo()">Go</button>
+        <a id="browser-ext" href="https://en.wikipedia.org/wiki/Petroleum_engineering" target="_blank"
+          style="text-decoration:none"><button style="font-size:10px;padding:1px 4px"
+            title="Open in new tab">↗</button></a>
+      </div>
+      <iframe id="browser-frame" src="about:blank"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"></iframe>
+      <div id="browser-blocked"
+        style="display:none;padding:20px;background:#fff;font-family:'MS Sans Serif',Arial,sans-serif;font-size:12px;text-align:center">
+        <div style="font-size:32px;margin-bottom:8px">🚫</div>
+        <b>This page cannot be displayed in the frame.</b><br>
+        <p style="color:#555;margin:6px 0;font-size:11px">This site blocks embedding. Use ↗ to open in a new tab.</p>
+      </div>
+    </div>
+    <div class="status-bar">
+      <p class="status-bar-field" id="browser-status">Ready</p>
+    </div>
+  </div>
+
+  <!-- GALLERY -->
+  <div id="win-gallery" class="w98 window" data-wid="gallery">
+    <div class="title-bar">
+      <div class="title-bar-text">Gallery — My Photos</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" onclick="WM.minimize('gallery')"></button>
+        <button aria-label="Maximize" onclick="WM.maximize('gallery')"></button>
+        <button aria-label="Close" onclick="WM.close('gallery')"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding:0">
+      <div id="gallery-tb">
+        <span style="font-family:'MS Sans Serif',Arial,sans-serif;font-size:11px;color:#555">
+          📌 Content managed via <code>content.json</code> in your GitHub repo
+        </span>
+      </div>
+      <div id="gallery-grid"></div>
+    </div>
+    <div class="status-bar">
+      <p class="status-bar-field" id="gallery-status">0 photo(s)</p>
+    </div>
+  </div>
+
+  <!-- RECORD SHELF -->
+  <div id="win-spotify" class="w98 window" data-wid="spotify">
+    <div class="title-bar">
+      <div class="title-bar-text">🎵 Record Shelf — Arthur's Picks</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" onclick="WM.minimize('spotify')"></button>
+        <button aria-label="Maximize" onclick="WM.maximize('spotify')"></button>
+        <button aria-label="Close" onclick="WM.close('spotify')"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding:0">
+      <div id="sp-header">
+        <div style="font-size:24px">🎵</div>
+        <div>
+          <div class="sp-title">RECORD SHELF</div>
+          <div class="sp-sub">Arthur's favourite albums</div>
+        </div>
+      </div>
+      <div id="sp-grid"></div>
+      <div id="sp-add">
+        <input id="sp-aname" type="text" placeholder="Album name">
+        <input id="sp-artist" type="text" placeholder="Artist">
+        <button onclick="document.getElementById('sp-art-inp').click()"
+          style="font-size:11px;padding:1px 8px;white-space:nowrap">+ Add Cover</button>
+        <input id="sp-art-inp" type="file" accept="image/*" style="display:none" onchange="Albums.add(this)">
+      </div>
+    </div>
+  </div>
+
+  <!-- RAMANI HONEY — Early Instagram UI -->
+  <div id="win-ramani" class="w98 window" data-wid="ramani">
+    <div class="title-bar">
+      <div class="title-bar-text">Ramani Honey</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" onclick="WM.minimize('ramani')"></button>
+        <button aria-label="Maximize" onclick="WM.maximize('ramani')"></button>
+        <button aria-label="Close" onclick="WM.close('ramani')"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding:0;background:#fafafa">
+
+      <!-- Instagram top nav bar -->
+      <div id="ig-nav">
+        <span class="ig-nav-back" onclick="WM.close('ramani')">‹</span>
+        <span class="ig-logo">Instagram</span>
+        <button class="ig-nav-view" onclick="window.open('https://instagram.com/ramani_honey','_blank')">View ↗</button>
+      </div>
+
+      <!-- Profile header -->
+      <div id="ig-profile">
+        <div id="ig-profile-top">
+          <div id="ig-avatar">🍯
+            <img id="ig-avatar-img" src="" alt="">
+          </div>
+          <div id="ig-profile-info">
+            <div class="ig-username">ramani_honey</div>
+            <span style="font-family:Arial,sans-serif;font-size:10px;color:#999">via content.json</span>
+          </div>
+        </div>
+        <div id="ig-stats">
+          <div class="ig-stat"><span class="ig-stat-n" id="ig-post-count">0</span><span class="ig-stat-l">posts</span>
+          </div>
+          <div class="ig-stat"><span class="ig-stat-n">25</span><span class="ig-stat-l">colonies</span></div>
+          <div class="ig-stat"><span class="ig-stat-n">2023</span><span class="ig-stat-l">est.</span></div>
+        </div>
+        <div id="ig-bio">
+          <span class="ig-bio-name">Ramani Honey 🍯</span>
+          Pure raw honey · Esambo Apiculture Ltd<br>
+          Western Kenya 🐝
+        </div>
+      </div>
+
+      <!-- Photo grid -->
+      <div id="ig-grid"></div>
+
+      <!-- Bottom tab bar -->
+      <div id="ig-tabs">
+        <span class="ig-tab on">🏠</span>
+        <span class="ig-tab">🔍</span>
+        <span class="ig-tab">📷</span>
+        <span class="ig-tab">♡</span>
+        <span class="ig-tab" onclick="window.open('https://instagram.com/ramani_honey','_blank')">👤</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- WILDCAT -->
+  <div id="win-wildcat" class="w98 window" data-wid="wildcat">
+    <div class="title-bar">
+      <div class="title-bar-text">🛢️ Wildcat! Oil Survey</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" onclick="WM.minimize('wildcat')"></button>
+        <button aria-label="Maximize" onclick="WM.maximize('wildcat')"></button>
+        <button aria-label="Close" onclick="WM.close('wildcat')"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding:0">
+      <div id="wc-body">
+        <div id="wc-hdr">
+          <div class="wc-digit" id="wc-dry-count">020</div>
+          <button id="wc-face" onclick="WC.init()" title="New Survey">🤠</button>
+          <div class="wc-digit" id="wc-timer">000</div>
+        </div>
+        <div id="wc-board"></div>
+        <div id="wc-status">Left-click: drill &nbsp;|&nbsp; Right-click: 🚩 flag dry zone</div>
+        <div id="wc-legend">💨 Gas find &nbsp; 🔶 Oil shows &nbsp; 🛢️ Gusher &nbsp; 🪨 Dry hole</div>
+        <div id="wc-diff">
+          <label><input type="radio" name="wcd" value="easy" onchange="WC.setDiff('easy')"> Proven Basin (35%)</label>
+          <label><input type="radio" name="wcd" value="medium" checked onchange="WC.setDiff('medium')"> Wildcat
+            (30%)</label>
+          <label><input type="radio" name="wcd" value="hard" onchange="WC.setDiff('hard')"> Frontier (20%)</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECYCLE BIN -->
+  <div id="win-recycle" class="w98 window" data-wid="recycle">
+    <div class="title-bar">
+      <div class="title-bar-text">Recycle Bin</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" onclick="WM.minimize('recycle')"></button>
+        <button aria-label="Maximize" onclick="WM.maximize('recycle')"></button>
+        <button aria-label="Close" onclick="WM.close('recycle')"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding:0">
+      <div id="recycle-body">
+        <p style="font-weight:bold;color:#000080;border-bottom:1px solid #c0c0c0;padding-bottom:4px;margin-bottom:8px">
+          🗑️ Skills I've Moved Past</p>
+        <p style="color:#808080;font-size:11px;margin-bottom:10px">These files were deleted. Mostly.</p>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:20px">📄</span>
+          <div>
+            <div style="font-weight:bold">manual_calculations.xlsx</div>
+            <div style="font-size:10px;color:#808080">Deleted 2023 · Replaced by Python</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:20px">📄</span>
+          <div>
+            <div style="font-weight:bold">waiting_for_perfect_conditions.doc</div>
+            <div style="font-size:10px;color:#808080">0 KB · Deleted permanently · Good riddance</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:20px">📄</span>
+          <div>
+            <div style="font-weight:bold">imposter_syndrome.exe</div>
+            <div style="font-size:10px;color:#808080">??? KB · Still trying to delete · Access denied</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding-top:8px;border-top:1px solid #c0c0c0;font-size:10px;color:#808080">1 item
+          cannot be permanently deleted.</div>
+      </div>
+    </div>
+    <div class="status-bar">
+      <p class="status-bar-field">3 object(s)</p>
+      <p class="status-bar-field">1 protected</p>
+    </div>
+  </div>
+
+  <!-- ABOUT PC -->
+  <div id="win-aboutpc" class="w98 window" data-wid="aboutpc">
+    <div class="title-bar">
+      <div class="title-bar-text">About This Computer</div>
+      <div class="title-bar-controls"><button aria-label="Close" onclick="WM.close('aboutpc')"></button></div>
+    </div>
+    <div class="window-body" style="padding:0">
+      <div id="apc-body">
+        <div class="apc-logo">🖥️</div>
+        <table class="apc-tbl">
+          <tr>
+            <td>System</td>
+            <td><b>Arthur Kisaka [v1998]</b></td>
+          </tr>
+          <tr>
+            <td>OS</td>
+            <td>KENYA.SYS on Windows 98</td>
+          </tr>
+          <tr>
+            <td>Processor</td>
+            <td>1× Brain @ Variable MHz</td>
+          </tr>
+          <tr>
+            <td>Memory</td>
+            <td>Finite but Expanding</td>
+          </tr>
+          <tr>
+            <td>Location</td>
+            <td>Nairobi, Kenya (−1.29°N, 36.82°E)</td>
+          </tr>
+          <tr>
+            <td>Uptime</td>
+            <td id="apc-uptime">...</td>
+          </tr>
+          <tr>
+            <td>Local time</td>
+            <td id="apc-time">--</td>
+          </tr>
+          <tr>
+            <td>Founded</td>
+            <td>1998</td>
+          </tr>
         </table>
-    </section>
+        <div style="margin-top:12px;text-align:center"><button onclick="WM.close('aboutpc')">OK</button></div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Projects Section -->
-    <section class="projects" id="projects">
-        <h2>Featured Work</h2>
-
-        <div class="project-grid">
-            <div class="project-card">
-                <h3>ML Lithology Interpreter</h3>
-                <img src="images/well_log.jpg" alt="Well Log" class="project-image">
-                <p>
-                    Final year project: Automated interpretation of well log lithology using machine learning. 
-                    Built classification models to identify rock types from geophysical logs, reducing interpretation 
-                    time and increasing accuracy for petroleum exploration.
-                </p>
-                <span class="project-tag">Python</span>
-                <span class="project-tag">Machine Learning</span>
-                <span class="project-tag">Petroleum Engineering</span>
-            </div>
-
-            <div class="project-card">
-                <h3>AI Workflow Automation</h3>
-                <img src="images/n8nexample.jpg" alt="n8n Workflow Automation" class="project-image">
-                <p>
-                    Designing and deploying intelligent automation workflows for business processes. 
-                    From contact form handling to newsletter signups and CRM integration, bridging 
-                    AI capabilities with practical business needs.
-                </p>
-                <span class="project-tag">n8n</span>
-                <span class="project-tag">AI Automation</span>
-                <span class="project-tag">Integration</span>
-            </div>
-
-            <div class="project-card">
-                <h3>Hackathon Submission</h3>
-                <img src="images/agentic_workflow.jpg" alt="Agentic RAG Workflow" class="project-image">
-                <p>
-                    Development of an Agentic AI Retreival Augmented Generation (RAG) system that analyses
-                    geophysical well data and can perform operations such as information retreival and inference.
-                </p>
-                <span class="project-tag">Innovation</span>
-                <span class="project-tag">Agentic AI</span>
-                <span class="project-tag">RAG Frameworks</span>
-                <span class="project-tag">Rapid Prototyping</span>
-            </div>
-
-            <div class="project-card">
-                <h3>5.8 Gin & Tonic Development</h3>
-                <img src="images/5.8_GnT.jpg" alt="5.8 Gin & Tonic" class="project-image">
-                <p>
-                    Coordinated end-to-end product development from business case development, recipe formulation through lab trials, 
-                    sensory evaluation, packaging design, and commercial rollout. Coordinated cross-functional 
-                    teams to bring a premium and natural premixed gin & tonic with three variants to market.
-                </p>
-                <span class="project-tag">Product Development</span>
-                <span class="project-tag">Innovation</span>
-                <span class="project-tag">Project Management</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- Experience Section -->
-    <section class="experience" id="experience">
-        <h2>Professional Layers</h2>
-
-        <div class="job">
-            <h3>Consultant</h3>
-            <div class="company">Kisima Consulting | Nairobi</div>
-            <div class="period">2025 - Present</div>
-            <ul>
-                <li>Developing AI solutions in geophysical applications, energy, manufacturing and climate change initiatives.</li>
-            </ul>
-        </div>
-
-        <div class="job">
-            <h3>Co-Founder</h3>
-            <div class="company">Ramani Honey | Nairobi</div>
-            <div class="period">2025 - Present</div>
-            <ul>
-                <li>Setting up a honey aggregation, marketing and distribution business</li>
-                <li>Partnering with farmers to source for authentic honey</li>
-                <li>Intergrating AI workflows and agents to support business activities</li>
-            </ul>
-        </div>
-
-        <div class="job">
-            <h3>Innovations & Projects Associate</h3>
-            <div class="company">African Originals | Nairobi</div>
-            <div class="period">2023 - 2025</div>
-            <ul>
-                <li>Coordinated the development of new product innovations: 5.8 Gin & Tonic, Mara Gin, KO Dry Cider & KO Klub</li>
-                <li>Led renovation of African Originals offices from warehouse sourcing to execution</li>
-                <li>Led internal and external sensory sessions to validate product quality, refine recipes, and gauge consumer sentiment</li>
-                <li>Designed and rolled out SOPs for structured consumer research</li>
-                <li>Facilitated cross-functional collaboration across finance, commercial, marketing, supply chain, and production</li>
-                <li>Implemented packaging design for Mara Gin</li>
-                <li>Developed automated Google Sheets tracker for innovation projects</li>
-                <li>Executed lab and pilot trials for recipe development</li>
-            </ul>
-        </div>
-
-        <div class="job">
-            <h3>Engineering Projects Assistant</h3>
-            <div class="company">Premier Foods Industry Limited | Nairobi</div>
-            <div class="period">2022 - 2023</div>
-            <ul>
-                <li>Spearheaded ginger process automation, boosting throughput by 45% through washer, juicer, and filter integration</li>
-                <li>Coordinated fabrication of mango ripening crates to optimize space and support mango puree production</li>
-                <li>Implemented water sustainability initiative by increasing storage, sub-metering, and rainwater harvesting</li>
-                <li>Produced detailed P&IDs, plant layouts, and technical drawings using AutoCAD and SolidWorks</li>
-                <li>Participated in sensory evaluation committee to assess new products</li>
-            </ul>
-        </div>
-
-        <div class="job">
-            <h3>Student Chapter President</h3>
-            <div class="company">Society of Petroleum Engineers Kenyatta University Student Chapter</div>
-            <div class="period">2020</div>
-            <ul>
-                <li>Spearheaded the realignment chapter activities to a virtual environment during a global pandemic with a zero-budget implication due to industry downturn.</li>
-                <li>Coordinated the formulation and implementation of a strategic vision for the chapter in three areas: Global Outlook, Industry Ready and Technical Emphasis</li>
-                <li>Initiated SPE KUSC technical sessions to boost technical competence of members in line with relevant and emerging technologies such as CAD, AI and IoT</li>
-                <li>Fostered collaboration with other Student Chapters within East Africa (UoN, MKU, Makerere, University of Dar Es Salaam) and relevant institutions.</li>
-                <li>Oversaw and participated in the editing and publication of two issues of the PetroBrief newsletter</li>
-            </ul>
-        </div>
-
-        <div class="job">
-            <h3>Lab Attache</h3>
-            <div class="company">Ministry of Mining & Petroleum | Nairobi</div>
-            <div class="period">2019</div>
-            <ul>
-                <li>Conducted geological investigations including petrographic analysis, pulverization, X-ray imaging, and chemical analysis</li>
-                <li>Developed lab reports based on client needs for mineral exploration, including a meteorite analysis</li>
-            </ul>
-        </div>
-    </section>
-
-    <!-- Interests Section - Now visible in main flow -->
-    <section class="hidden-section revealed" id="interests" style="min-height: 100vh; cursor: default;">
-        <h2 style="color: #00bcd4; font-size: 48px; margin-bottom: 30px;">Beyond the Core</h2>
-        <p style="max-width: 700px; font-size: 18px; margin-bottom: 50px; color: #aaa;">
-            Sometimes the best discoveries happen off the main path. Here's what fuels my curiosity outside of work.
-        </p>
-
-        <div class="interests-grid">
-            <div class="interest-card">
-                <h3>🐝 Apiculture</h3>
-                <img src="images/apiculture.jpg" alt="Apiculture" class="interest-image">
-                <p style="color: #aaa;">
-                    Beekeeping teaches patience, observation, and respect for complex systems. I am fascinated by the
-                    life of the honeybee, being able to immortalise flowers with such sweet returns is not appreciated
-                    enough
-                </p>
-            </div>
-
-            <div class="interest-card">
-                <h3>🏃 Running & Cycling</h3>
-                <img src="images/cycling.jpg" alt="Running and Cycling" class="interest-image">
-                <p style="color: #aaa;">
-                    No human is limited. I would like to see how far my body can go and I enjoy the discipline
-                    of endurance sports. Follow me on Strava and give me a kudos, I am BEGGING you, thanks 💯.
-                </p>
-            </div>
-
-            <div class="interest-card">
-                <h3>✈️ Travel</h3>
-                <img src="images/travel.jpg" alt="Travel" class="interest-image">
-                <p style="color: #aaa;">
-                    Exploring new places, cultures, and perspectives. Every journey is a geological survey 
-                    of human experience.
-                </p>
-            </div>
-
-            <div class="interest-card">
-                <h3>📝 Reading </h3>
-                <img src="images/reading.jpg" alt="Reading" class="interest-image">
-                <p style="color: #aaa;">
-                    Reading allows us to imagine, to explore and to learn. Sometimes I'm deep into a biography
-                    understanding how different people spent their lives, other times I'm looking into the history
-                    of an area of interest and there is the occassional fiction to keep novel ideas flowing.
-                </p>
-            </div>
-
-            <div class="interest-card">
-                <h3>🎙️ Listening to podcasts</h3>
-                <img src="images/founders.jpg" alt="Podcasts" class="interest-image"> 
-                <img src="images/fincorrect.jpg" alt="Podcasts" class="interest-image">
-                <p style="color: #aaa;">
-                    I enjoy listening to podcasts that cast a different perspective on life and help me to
-                    appreciate the wisdom of others. My favourites are Founders and Financially Incorrect, 
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Poetry Section - Hidden Discovery -->
-    <section class="hidden-section" id="discovery" onclick="revealHidden()">
-        <div class="discovery-prompt">🧭🚧 DEVIATION DETECTED - CLICK TO EXPLORE 🧭🚧</div>
-        
-        <div class="hidden-content" id="hiddenContent">
-            <h2 style="color: #e05263; font-size: 48px; margin-bottom: 30px;">Verses from the Core</h2>
-            <p style="max-width: 700px; font-size: 18px; margin-bottom: 50px; color: #aaa; margin-left: auto; margin-right: auto; text-align: center;">
-                Words forged under pressure, ideas crystallized through time. Here are a few pieces from deeper layers.
-            </p>
-
-            <div class="poem-container" style="max-width: 800px; margin: 0 auto;">
-                <div class="poem">
-                    <h3>Decision Time</h3>
-                    <div class="poem-text">
-                        I stand before a cliff,<br>
-                        It'll all be over in a whiff,<br>
-                        All I can do is share the grief,<br>
-                        As I stare over the reef,<br>
-                        <br>
-                        The waves, oh how they crash,<br>
-                        Putting the silence to a hush,<br>
-                        There is no need for rush,<br>
-                        Even though time may dash,<br>
-                        <br>
-                        Many have taken the dive,<br>
-                        If the dive took five,<br>
-                        Who am I to prove,<br>
-                        My only desire is to be alive,<br>
-                        <br>
-                        To fly,<br>
-                        To die,<br>
-                        We'll know once we cast the die,<br>
-                        Yes I know the time is nigh,<br>
-                    </div>
-                </div>
-
-                <div class="poem">
-                    <h3>A Hidden Joy</h3>
-                    <div class="poem-text">
-                        It is only I who can understand,<br>
-                        This joy and hope that I found,<br>
-                        Though to many I may expound,<br>
-                        They can never grasp how profound,<br>
-                        <br>
-                        You see, it's sort of personal,<br>
-                        You have to yearn for what's eternal,<br>
-                        Yet is is not by sight, it's spiritual,<br>
-                        Yes, the Gospel is fundamental,<br>
-                        <br>
-                        For the joy we possess,<br>
-                        Is not for the world to see,<br>
-                        But that which we profess,<br>
-                        Comes only through the cross,<br>
-                    </div>
-                </div>
-
-                <div class="poem">
-                    <h3>Waves</h3>
-                    <div class="poem-text">
-                        As the suns rays hit the ocean,<br>
-                        they asked the waves why they were headed to shore,<br>
-                        The waves said let us show you,<br>
-                        And behold a shimmering light was shining,<br>
-                        Eyes staring into the horizon,<br>
-                        <br>
-                        Finally the sun could appreciate it's beauty in her eyes<br>
-                        So the suns rays painted her silhouette and the oceans waves rocked back and forth at her feet worshiping her beauty<br>
-                        <br>
-                        Behold it was you all along.<br>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section class="contact" id="contact">
-        <h2>Secrets of the Deep</h2>
-        <p>
-            Ready to bridge AI and reality?
-        </p>
-        <p>
-            Let's craft solutions that transform your business. 
-            I'm here to help you become the best version of yourself; not with robotic implementations, 
-            but with thoughtful, human-centered AI consulting.
-        </p>
-
-        <form class="contact-form" id="contactForm">
-            <div class="form-group">
-                <label for="name">Your Name</label>
-                <input type="text" id="name" name="name" required>
-            </div>
-
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-
-            <div class="form-group">
-                <label for="message">Your Message</label>
-                <textarea id="message" name="message" required></textarea>
-            </div>
-            
-            <div class="form-group checkbox-group">
-            <input type="checkbox" id="subscribe" name="subscribe" value="yes">
-            <label for="subscribe">I would like to receive monthly blog posts via email</label>
-            </div>
-
-            <button type="submit" class="submit-btn">Send Message</button>
-        </form>
-
-        <a href="https://github.com/Arturo-K/tupo-site/blob/main/docs/Arthur-Kisaka-Resume.pdf" class="download-cv">
-            <svg class="cv-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="12" y1="18" x2="12" y2="12"></line>
-                <line x1="9" y1="15" x2="15" y2="15"></line>
-            </svg>
-            CV
+  <!-- BLOG -->
+  <div id="win-blog" class="w98 window" data-wid="blog">
+    <div class="title-bar">
+      <div class="title-bar-text">✍️ Blog — Arthur's Writing</div>
+      <div class="title-bar-controls">
+        <button aria-label="Minimize" onclick="WM.minimize('blog')"></button>
+        <button aria-label="Maximize" onclick="WM.maximize('blog')"></button>
+        <button aria-label="Close" onclick="WM.close('blog')"></button>
+      </div>
+    </div>
+    <div class="window-body" style="padding:0">
+      <div id="blog-tb">
+        <a id="blog-substack-link" href="https://substack.com" target="_blank" style="text-decoration:none">
+          <button
+            style="font-size:11px;padding:1px 8px;background:#ff6719;border-color:#cc4400 #ff8844 #ff8844 #cc4400;color:#fff">Open
+            Substack ↗</button>
         </a>
+        <button onclick="Blog.load()" style="font-size:11px;padding:1px 8px">🔄 Refresh</button>
+        <span id="blog-handle-label"
+          style="font-family:'MS Sans Serif',Arial,sans-serif;font-size:10px;color:#555;margin-left:4px"></span>
+      </div>
+      <div id="blog-posts">
+        <div class="blog-loading">Loading posts from Substack...</div>
+      </div>
+    </div>
+    <div class="status-bar">
+      <p class="status-bar-field" id="blog-status">Ready</p>
+    </div>
+  </div>
 
-        <p style="margin-top: 40px; font-size: 16px;">
-            <strong>Email:</strong> m.arthurkisaka@gmail.com<br>
-            <strong>Phone:</strong> +254 796 841 404
-        </p>
-    </section>
+  <div id="screensaver"><canvas id="ss-canvas"></canvas></div>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2025 Arthur Kisaka. Drilling deeper, building better.</p>
-    </footer>
+  <script>
+    'use strict';
 
-    <script>
-        // Drill bit animation and depth counter
-        const drillBit = document.querySelector('.drill-bit');
-         const drillString = document.getElementById('drillString');
-        const depthCounter = document.getElementById('depth');
-        
-        window.addEventListener('scroll', () => {
-            const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
-            const maxDepth = 5000; // Maximum depth in meters
-            const currentDepth = Math.round(scrollPercent * maxDepth);
-            
-            // Update depth counter
-            depthCounter.textContent = currentDepth;
-            
-            // Move drill bit
-            const maxTravel = window.innerHeight - 100;
-            const drillPosition = scrollPercent * maxTravel;
-            drillBit.style.top = drillPosition + 'px';
+    /* ── BOOT ─────────────────────────────────────────────────── */
+    const BOOT_LINES = [
+      ['', 0],
+      ['ARTHUR KISAKA BIOS v1998', 0],
+      ['Copyright (C) 1998 Kisaka Systems Ltd.', 60],
+      ['', 80],
+      ['Memory Test: ', 120],
+      ['640K OK', 400, 'ok'],
+      ['', 80],
+      ['Detecting drives...', 200],
+      ['  C: BRAINS.HDD       120 GB  OK', 300, 'ok'],
+      ['  D: EXPERIENCE.HDD    40 GB  OK', 200, 'ok'],
+      ['  E: HONEYCOMB.USB      2 GB  OK', 200, 'ok'],
+      ['', 100],
+      ['Loading KENYA.SYS................... ', 160],
+      ['OK', 450, 'ok'],
+      ['Loading PETROLEUM.ENG............... ', 160],
+      ['OK', 450, 'ok'],
+      ['Loading AGENTIC_AI.DLL.............. ', 160],
+      ['OK', 450, 'ok'],
+      ['Loading APICULTURE.SYS (25 colonies) ', 160],
+      ['OK', 450, 'ok'],
+      ['Loading SPE_KENYA.EXE............... ', 160],
+      ['OK', 450, 'ok'],
+      ['', 100],
+      ['Starting Windows 98...', 300],
+      ['', 200],
+      ['C:\\ARTHUR\\Desktop> ', 100],
+    ];
+    window.addEventListener('DOMContentLoaded', () => {
+      let i = 0;
+      const el = document.getElementById('boot-text'), pr = document.getElementById('boot-prompt');
+      function next() {
+        if (i >= BOOT_LINES.length) { pr.classList.add('visible'); document.addEventListener('click', launch, { once: true }); return; }
+        const [t, ms, cls] = BOOT_LINES[i++];
+        setTimeout(() => {
+          el.innerHTML += t === '' ? '\n' : (cls ? `<span class="${cls}">${t}</span>` : t);
+          next();
+        }, ms || 0);
+      }
+      next();
+    });
+    function launch() {
+      playChime();
+      const b = document.getElementById('boot'), d = document.getElementById('desktop');
+      b.classList.add('fading');
+      setTimeout(() => { b.style.display = 'none'; d.classList.add('visible'); initDesktop(); }, 900);
+    }
 
-            // Update drill string length
-            drillString.style.height = drillPosition + 'px';
+    /* ── CHIME ────────────────────────────────────────────────── */
+    function playChime() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        [[392, .0, 1.8, .12], [523.3, .08, 1.6, .12], [659.3, .18, 1.5, .14], [783.9, .32, 2, .18], [1046.5, .55, 1.6, .1]].forEach(([f, s, d, v]) => {
+          const o = ctx.createOscillator(), g = ctx.createGain();
+          o.connect(g); g.connect(ctx.destination); o.type = 'sine'; o.frequency.value = f;
+          const t = ctx.currentTime + s;
+          g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .06); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+          o.start(t); o.stop(t + d + .05);
         });
+      } catch (e) { }
+    }
 
-        // Smooth scroll for navigation
-        document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-        });
-
-        // Toggle navigation
-        function toggleNav() {
-            const nav = document.getElementById('mainNav');
-            nav.classList.toggle('expanded');
+    /* ── WINDOW MANAGER ───────────────────────────────────────── */
+    const WIN_META = {
+      about: { title: 'About Arthur.txt', icon: '📄' },
+      projects: { title: 'My Projects', icon: '💻' },
+      resume: { title: 'Resume.doc', icon: '📝' },
+      terminal: { title: 'MS-DOS Prompt', icon: '⬛' },
+      ie: { title: 'Links', icon: '🔗' },
+      browser: { title: "Arthur's Browser", icon: '🌐' },
+      gallery: { title: 'Gallery', icon: '🖼️' },
+      spotify: { title: 'Record Shelf', icon: '🎵' },
+      ramani: { title: 'Ramani Honey', icon: '🍯' },
+      wildcat: { title: 'Wildcat!', icon: '🛢️' },
+      recycle: { title: 'Recycle Bin', icon: '🗑️' },
+      aboutpc: { title: 'About This Computer', icon: '🖥️' },
+      blog: { title: 'Blog', icon: '✍️' },
+    };
+    const WM = {
+      z: 200, active: null,
+      open(id) {
+        const w = document.getElementById('win-' + id); if (!w) return;
+        if (w.classList.contains('minimized')) w.classList.remove('minimized');
+        w.classList.add('open'); this.focus(id); this._addBtn(id);
+        // Lazy-init per window
+        if (id === 'wildcat' && !WC.initted) { WC.setDiff('medium'); WC.initted = true; }
+        if (id === 'aboutpc') this._updPC();
+        if (id === 'projects') showProj('cysmic');
+        if (id === 'terminal') termInit();
+        if (id === 'gallery') Gallery.render();
+        if (id === 'spotify') Albums.render();
+        if (id === 'ramani') Ramani.render();
+        if (id === 'browser') browserInit();
+        if (id === 'blog') Blog.open();
+        SS.reset();
+      },
+      close(id) {
+        const w = document.getElementById('win-' + id); if (!w) return;
+        w.classList.remove('open', 'minimized'); this._delBtn(id);
+        if (this.active === id) this.active = null;
+      },
+      minimize(id) {
+        const w = document.getElementById('win-' + id); if (!w) return;
+        w.classList.add('minimized');
+        if (this.active === id) this.active = null;
+        const b = document.querySelector(`.tb-btn[data-wid="${id}"]`);
+        if (b) b.classList.remove('active');
+      },
+      maximize(id) {
+        const w = document.getElementById('win-' + id); if (!w) return;
+        if (w.dataset.maxed === '1') { w.style.cssText = w.dataset.prev || ''; delete w.dataset.maxed; }
+        else { w.dataset.prev = w.style.cssText; w.style.cssText = 'left:0;top:0;width:100%;height:calc(100vh - 28px);position:absolute;'; w.dataset.maxed = '1'; }
+      },
+      focus(id) {
+        if (this.active && this.active !== id) {
+          const p = document.getElementById('win-' + this.active);
+          if (p) p.querySelector('.title-bar').classList.add('inactive');
+          const pb = document.querySelector(`.tb-btn[data-wid="${this.active}"]`);
+          if (pb) pb.classList.remove('active');
         }
-
-        // Close nav when clicking outside
-        document.addEventListener('click', function(e) {
-            const nav = document.getElementById('mainNav');
-            if (!nav.contains(e.target) && nav.classList.contains('expanded')) {
-                nav.classList.remove('expanded');
-            }
+        this.active = id;
+        const w = document.getElementById('win-' + id); if (!w) return;
+        w.style.zIndex = ++this.z;
+        w.querySelector('.title-bar').classList.remove('inactive');
+        const b = document.querySelector(`.tb-btn[data-wid="${id}"]`);
+        if (b) b.classList.add('active');
+      },
+      makeDraggable(win) {
+        const tb = win.querySelector('.title-bar');
+        let ox, oy, ol, ot, drag = false;
+        tb.addEventListener('mousedown', e => {
+          if (e.target.closest('.title-bar-controls')) return;
+          if (win.dataset.maxed === '1') return;
+          drag = true; ox = e.clientX; oy = e.clientY; ol = win.offsetLeft; ot = win.offsetTop;
+          WM.focus(win.dataset.wid); e.preventDefault();
         });
+        document.addEventListener('mousemove', e => { if (!drag) return; win.style.left = Math.max(0, ol + e.clientX - ox) + 'px'; win.style.top = Math.max(0, ot + e.clientY - oy) + 'px'; });
+        document.addEventListener('mouseup', () => drag = false);
+        win.addEventListener('mousedown', () => WM.focus(win.dataset.wid));
+      },
+      _addBtn(id) {
+        if (document.querySelector(`.tb-btn[data-wid="${id}"]`)) return;
+        const m = WIN_META[id]; if (!m) return;
+        const b = document.createElement('button'); b.className = 'tb-btn'; b.dataset.wid = id; b.innerHTML = `${m.icon} ${m.title}`;
+        b.addEventListener('click', () => {
+          const w = document.getElementById('win-' + id); if (!w) return;
+          if (w.classList.contains('minimized')) { w.classList.remove('minimized'); WM.focus(id); }
+          else if (WM.active === id) { WM.minimize(id); }
+          else WM.focus(id);
+        });
+        document.getElementById('window-btns').appendChild(b);
+      },
+      _delBtn(id) { const b = document.querySelector(`.tb-btn[data-wid="${id}"]`); if (b) b.remove(); },
+      _updPC() {
+        const n = new Date();
+        document.getElementById('apc-time').textContent = n.toLocaleTimeString('en-KE');
+        document.getElementById('apc-uptime').textContent = `~${n.getFullYear() - 1998} years`;
+      }
+    };
 
-        // Hidden section reveal
-        function revealHidden() {
-            const hiddenContent = document.getElementById('hiddenContent');
-            const section = document.getElementById('discovery');
-            const prompt = document.querySelector('.discovery-prompt');
-            
-            if (!hiddenContent.classList.contains('show')) {
-                hiddenContent.classList.add('show');
-                section.classList.add('revealed');
-                prompt.style.display = 'none';
-                section.style.cursor = 'default';
-            }
+    /* ── INIT ─────────────────────────────────────────────────── */
+    function initDesktop() {
+      document.querySelectorAll('.w98').forEach(w => WM.makeDraggable(w));
+      updateClock(); setInterval(updateClock, 1000);
+      // FIX: stopPropagation so document click doesn't immediately close the menu
+      document.getElementById('start-btn').addEventListener('click', e => { e.stopPropagation(); toggleMenu(); });
+      document.getElementById('start-menu').addEventListener('click', e => e.stopPropagation());
+      document.getElementById('poems-panel').addEventListener('click', e => e.stopPropagation());
+      document.getElementById('tray-poem-btn').addEventListener('click', e => { e.stopPropagation(); togglePoems(); });
+      document.getElementById('desktop').addEventListener('contextmenu', e => { e.preventDefault(); showCtx(e.clientX, e.clientY); });
+      document.addEventListener('click', () => { hideCtx(); closeMenu(); });
+      document.getElementById('desktop').addEventListener('click', e => {
+        if (!e.target.closest('.d-icon')) document.querySelectorAll('.d-icon').forEach(i => i.classList.remove('selected'));
+      });
+      document.querySelectorAll('.d-icon').forEach(ic => {
+        ic.addEventListener('click', e => { e.stopPropagation(); document.querySelectorAll('.d-icon').forEach(i => i.classList.remove('selected')); ic.classList.add('selected'); });
+      });
+      const vc = document.getElementById('visitor-count');
+      if (vc) vc.textContent = String(1998 + Math.floor(Math.random() * 999 + 100)).padStart(6, '0');
+      // Load persistent data
+      Gallery.load(); Albums.load(); Ramani.load(); Poems.load(); loadAboutPhoto();
+      loadBackendContent();
+      SS.init();
+    }
+    function updateClock() { document.getElementById('tb-clock').textContent = new Date().toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' }); }
+    function toggleMenu() { document.getElementById('start-menu').classList.toggle('open'); }
+    function closeMenu() { document.getElementById('start-menu').classList.remove('open'); }
+    function showCtx(x, y) { const m = document.getElementById('ctx-menu'); m.style.left = Math.min(x, window.innerWidth - 180) + 'px'; m.style.top = Math.min(y, window.innerHeight - 160) + 'px'; m.classList.add('open'); }
+    function hideCtx() { document.getElementById('ctx-menu').classList.remove('open'); }
+
+    /* ── ABOUT PHOTO ──────────────────────────────────────────── */
+    function setAboutPhoto(inp) {
+      const f = inp.files[0]; if (!f) return;
+      const r = new FileReader();
+      r.onload = e => { localStorage.setItem('about_photo_v2', e.target.result); applyAboutPhoto(e.target.result); };
+      r.readAsDataURL(f);
+    }
+    function applyAboutPhoto(src) {
+      document.getElementById('about-ph-emoji').style.display = 'none';
+      const img = document.getElementById('about-ph-img'); img.src = src; img.style.display = 'block';
+    }
+    function loadAboutPhoto() { const p = localStorage.getItem('about_photo_v2'); if (p) applyAboutPhoto(p); }
+
+    /* ── TERMINAL ─────────────────────────────────────────────── */
+    let termDone = false;
+    function termInit() {
+      if (termDone) return; termDone = true;
+      document.getElementById('t-output').innerHTML =
+        `<span class="t-head">Microsoft(R) Windows 98\n</span><span class="t-dim">(C)Copyright Microsoft Corp 1981-1998.\n\n</span>Type <span class="t-ok">HELP</span> for available commands.\n\n`;
+      setTimeout(() => document.getElementById('t-input').focus(), 100);
+    }
+    const TC = {
+      help: () => `<span class="t-head">Commands:</span>\n  <span class="t-ok">WHOAMI  SKILLS  CONTACT  PROJECTS  DATE  DIR  VER  CLS  EXIT</span>\n`,
+      whoami: () => `Arthur Kisaka\nPetroleum Engineer | Agentic AI Consultant | Apiarist\nLocation:  Nairobi, Kenya [−1.29° N, 36.82° E]\nUptime:    ~${new Date().getFullYear() - 1998} years\nStatus:    <span class="t-ok">ONLINE</span>\n`,
+      skills: () => `<span class="t-head">TECHNICAL SKILLS MANIFEST v1.998\n</span><span class="t-dim">══════════════════════════════════\n\n</span>` +
+        `<span class="t-ok">[PETROLEUM ENGINEERING]\n</span>  Reservoir analysis & simulation\n  Well log interpretation (LAS/DLIS)\n  Production optimisation, geothermal\n  Tools: Python/lasio, Petrel, PIPESIM\n\n` +
+        `<span class="t-ok">[AGENTIC AI & LLM]\n</span>  LLM orchestration (Claude API, Ollama)\n  Agentic workflow design\n  Generative UI (Streamlit)\n  Tools: Python, Anthropic SDK, LangChain\n\n` +
+        `<span class="t-ok">[DATA & VIZ]\n</span>  Sankey charts, dashboards, datathon design\n  Tools: Plotly, Power BI, Excel\n\n` +
+        `<span class="t-ok">[OTHER]\n</span>  Apiculture (25 colonies, Ramani Honey)\n  SPE Kenya DSEATS, SAASC 2026\n  Vanilla JS, single-file HTML\n\n` +
+        `Run <span class="t-ok">CONTACT</span> to get in touch.\n`,
+      contact: () => `<span class="t-head">CONTACT\n</span><span class="t-dim">═══════\n\n</span>Phone:  <span class="t-ok">+254 796 841 404</span>\nEmail:  <span class="t-ok">m.arthurkisaka@gmail.com</span>\nWeb:    <span class="t-ok">arthurkisaka.site</span>\n`,
+      projects: () => { setTimeout(() => WM.open('projects'), 200); return `<span class="t-ok">Opening My Projects...\n</span>`; },
+      date: () => new Date().toString() + '\n',
+      ver: () => `Windows 98 [Version 4.10.1998]\n`,
+      dir: () => ` Directory of C:\\ARTHUR\\Desktop\n\nAbout Arthur.txt   1,998 bytes\nMy Projects        &lt;DIR&gt;\nResume.doc         7,340 bytes\nWildcat.exe       19,980 bytes\n`,
+      cls: () => { document.getElementById('t-output').innerHTML = ''; return ''; },
+      clear: () => { document.getElementById('t-output').innerHTML = ''; return ''; },
+      exit: () => { setTimeout(() => WM.close('terminal'), 300); return 'Closing...\n'; },
+    };
+    function termKey(e) {
+      if (e.key !== 'Enter') return;
+      const inp = document.getElementById('t-input'), raw = inp.value.trim(), cmd = raw.toLowerCase();
+      const out = document.getElementById('t-output');
+      out.innerHTML += `<span style="color:#fff">C:\\ARTHUR\\Desktop&gt; ${raw}</span>\n`;
+      if (cmd) { const fn = TC[cmd]; out.innerHTML += (fn ? fn() : (`<span class="t-err">'${raw}' is not recognised.\n</span>`)) + '\n'; }
+      inp.value = '';
+      const tb = document.getElementById('terminal-body'); tb.scrollTop = tb.scrollHeight;
+    }
+
+    /* ── PROJECTS ─────────────────────────────────────────────── */
+    const PROJS = {
+      cysmic: {
+        title: 'CYSMIC V3.0', st: 'dev', stxt: '● In Development', tags: ['Python', 'Streamlit', 'Ollama', 'lasio', 'Claude API'],
+        body: `<p>AI-powered petroleum engineering assistant with generative UI. Local LLM inference via Ollama. LAS file parsing via lasio.</p><p style="margin-top:6px"><b>Phase 1:</b> LAS support, DataContext session — <span style="color:green">✓ Complete</span><br><b>Phase 2:</b> JSON→UI card generation — <span style="color:#884400">In Progress</span></p>`
+      },
+      ramani: {
+        title: 'Ramani Honey / Esambo Apiculture', st: 'active', stxt: '● Active', tags: ['Commercial Honey', '25 colonies', 'Western Kenya'],
+        body: `<p>Commercial honey brand on Esambo Apiculture Ltd operations. 25 colonies across Western Kenya.</p><p style="margin-top:6px">Exploring mead-making as a new product line.</p>`
+      },
+      datathon: {
+        title: 'SPE Africa Geothermal Datathon', st: 'plan', stxt: '● Planning', tags: ['SPE Kenya', 'DSEATS', 'SAASC 2026', 'GDC', 'KenGen'],
+        body: `<p>Organising the first SPE Africa Geothermal Datathon under DSEATS/SAASC 2026. Kenyatta University · July 22–24, 2026.</p><p style="margin-top:6px">Kenya holds ~80% of African geothermal electricity generation.</p>`
+      },
+      jaza: {
+        title: 'JAZA Protein Bar', st: 'concept', stxt: '◌ Concept', tags: ['East Africa', 'FMCG', 'Kenya', 'Rwanda', 'Seed Stage'],
+        body: `<p>Groundnut protein bar for East African fitness market. McKinsey-style investor pitch. Seed funding ask for Kenya/Rwanda launch.</p>`
+      },
+      portfolio: {
+        title: 'arthurkisaka.site', st: 'active', stxt: '● Live', tags: ['HTML', 'CSS', 'JavaScript', 'GitHub Pages', 'Win98'],
+        body: `<p>Personal portfolio — geological exploration theme meets Windows 98. Born in 1998. Built in 1998. Single HTML file. You are here.</p>`
+      },
+    };
+    function showProj(id) {
+      document.querySelectorAll('.tree-item').forEach(el => el.classList.toggle('active', el.dataset.proj === id));
+      const p = PROJS[id]; if (!p) return;
+      const sc = { active: 'color:green', dev: 'color:#884400', plan: 'color:#000080', concept: 'color:#660066' }[p.st] || '';
+      document.getElementById('proj-content').innerHTML =
+        `<div class="proj-title">${p.title}</div>` +
+        `<p style="font-weight:bold;${sc};margin-bottom:4px">${p.stxt}</p>` +
+        `<div style="margin:6px 0">${p.tags.map(t => `<span class="proj-tag">${t}</span>`).join('')}</div>` +
+        `<div style="margin-top:8px">${p.body}</div>`;
+      document.getElementById('proj-status').textContent = p.title;
+    }
+
+    /* ── BROWSER ──────────────────────────────────────────────── */
+    let bHist = [], bIdx = -1;
+    function browserInit() { if (bHist.length === 0) bNav('https://en.wikipedia.org/wiki/Petroleum_engineering'); }
+    function browserGo() { let u = document.getElementById('browser-url').value.trim(); if (!u) return; if (!u.startsWith('http')) u = 'https://' + u; bNav(u); }
+    function browserBack() { if (bIdx > 0) { bIdx--; bNav(bHist[bIdx], true); } }
+    function browserFwd() { if (bIdx < bHist.length - 1) { bIdx++; bNav(bHist[bIdx], true); } }
+    function browserHome() { bNav('https://en.wikipedia.org/wiki/Petroleum_engineering'); }
+    function bNav(url, fromHist = false) {
+      document.getElementById('browser-url').value = url;
+      document.getElementById('browser-ext').href = url;
+      document.getElementById('browser-status').textContent = 'Loading...';
+      document.getElementById('browser-blocked').style.display = 'none';
+      const fr = document.getElementById('browser-frame');
+      fr.style.display = 'block'; fr.src = url;
+      fr.onload = () => document.getElementById('browser-status').textContent = 'Done';
+      fr.onerror = () => { fr.style.display = 'none'; document.getElementById('browser-blocked').style.display = 'block'; document.getElementById('browser-status').textContent = 'Blocked'; };
+      if (!fromHist) { bHist = bHist.slice(0, bIdx + 1); bHist.push(url); bIdx = bHist.length - 1; }
+    }
+
+    /* ── GALLERY ──────────────────────────────────────────────── */
+    const Gallery = {
+      backend: [],
+      load() { }, // no localStorage — content managed via content.json
+      render() {
+        const g = document.getElementById('gallery-grid'); if (!g) return;
+        const st = document.getElementById('gallery-status');
+        if (this.backend.length === 0) {
+          g.innerHTML = '<div class="g-empty">📷<br><br>No photos yet.<br>Add items to <b>gallery</b> in <code>content.json</code>.</div>';
+          if (st) st.textContent = '0 photo(s)'; return;
         }
+        g.innerHTML = this.backend.map(im =>
+          `<div class="g-thumb"><img src="${im.src}" alt="${im.caption || ''}" title="${im.caption || ''}"></div>`
+        ).join('');
+        if (st) st.textContent = `${this.backend.length} photo(s) — content.json`;
+      }
+    };
 
-        // Contact form handling
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const webhookURL = 'https://n8n.arthurkisaka.site/webhook/3b62a90f-5509-4390-b5c0-dac075603448';
-            
-            const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                message: document.getElementById('message').value,
-                subscribe: document.getElementById('subscribe').checked ? 'yes' : 'no' // Capture checkbox state
-            };
+    /* ── ALBUMS / RECORD SHELF ────────────────────────────────── */
+    const Albums = {
+      items: [],
+      load() { try { this.items = JSON.parse(localStorage.getItem('albums_v2') || '[]'); } catch (e) { this.items = []; } },
+      save() { try { localStorage.setItem('albums_v2', JSON.stringify(this.items)); } catch (e) { alert('Storage full.'); } },
+      add(inp) {
+        const f = inp.files[0]; if (!f) return;
+        const name = document.getElementById('sp-aname').value.trim() || 'Unknown Album';
+        const artist = document.getElementById('sp-artist').value.trim() || 'Unknown Artist';
+        const r = new FileReader();
+        r.onload = e => { this.items.push({ src: e.target.result, name, artist }); this.save(); this.render(); document.getElementById('sp-aname').value = ''; document.getElementById('sp-artist').value = ''; inp.value = ''; };
+        r.readAsDataURL(f);
+      },
+      remove(i) { this.items.splice(i, 1); this.save(); this.render(); },
+      render() {
+        const g = document.getElementById('sp-grid'); if (!g) return;
+        if (this.items.length === 0) { g.innerHTML = '<div class="sp-empty">🎵<br><br>No albums yet.<br>Fill in album + artist, then click "+ Add Cover".</div>'; return; }
+        g.innerHTML = this.items.map((al, i) =>
+          `<div class="al-card"><img class="al-art" src="${al.src}" alt="${al.name}"><div class="al-name" title="${al.name}">${al.name}</div><div class="al-artist">${al.artist}</div><button class="al-del" onclick="Albums.remove(${i})">×</button></div>`).join('');
+      }
+    };
 
-            // Uncomment and configure when you have your webhook URL
-        
-            fetch(webhookURL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('Message sent! You\'ll receive a confirmation email shortly.');
-                this.reset();
-            })
-            .catch(error => {
-                alert('Error sending message. Please email me directly.');
-                console.error('Error:', error);
-            });
+    /* ── RAMANI ───────────────────────────────────────────────── */
+    const Ramani = {
+      backend: [],
+      load() { }, // no localStorage — content managed via content.json
+      render() {
+        const g = document.getElementById('ig-grid'); if (!g) return;
+        const cnt = document.getElementById('ig-post-count');
+        const PH = ['🍯', '🐝', '🌸', '🏔️', '🌿', '🐝', '🍯', '🌸', '🏔️'];
+        if (cnt) cnt.textContent = this.backend.length;
+        if (this.backend.length === 0) {
+          g.innerHTML = PH.map(e => `<div class="ig-ph">${e}</div>`).join('');
+          return;
+        }
+        g.innerHTML = this.backend.map((im, i) =>
+          `<div class="ig-cell"><img src="${im.src}" alt="Post ${i + 1}"></div>`
+        ).join('');
+      }
+    };
 
-            //this.reset();
-        });
-    </script>
+    /* ── POEMS ────────────────────────────────────────────────── */
+    const Poems = {
+      items: [],     // localStorage entries
+      backend: [],   // from content.json
+      load() { try { this.items = JSON.parse(localStorage.getItem('poems_v2') || '[]'); } catch (e) { this.items = []; } },
+      save() { localStorage.setItem('poems_v2', JSON.stringify(this.items)); },
+      add() {
+        const title = prompt('Title or heading:'); if (!title) return;
+        const body = prompt('Poem or update (use \\n for line breaks):'); if (!body) return;
+        this.items.unshift({ title, body: body.replace(/\\n/g, '\n'), date: new Date().toLocaleDateString('en-KE') });
+        this.save(); this.render();
+      },
+      remove(i) { if (confirm('Remove this entry?')) { this.items.splice(i, 1); this.save(); this.render(); } },
+      render() {
+        const list = document.getElementById('poems-list'); if (!list) return;
+        // Backend poems first (no delete), then localStorage
+        const all = [...this.backend.map(p => ({ ...p, _be: true })), ...this.items];
+        if (all.length === 0) { list.innerHTML = '<div class="poems-empty">No entries yet.<br>Click + Add or populate via content.json.</div>'; return; }
+        list.innerHTML = all.map((p, i) => {
+          const localIdx = i - this.backend.length;
+          const del = p._be ? '<span class="be-badge">📌</span>' : `<button class="poem-del" onclick="Poems.remove(${localIdx})">×</button>`;
+          return `<div class="poem-card"><div class="poem-head"><span>${p.title}</span><span><span class="poem-date">${p.date || ''}</span> ${del}</span></div><div class="poem-body">${p.body}</div></div>`;
+        }).join('');
+      }
+    };
+    function togglePoems() {
+      const p = document.getElementById('poems-panel');
+      p.classList.toggle('open');
+      if (p.classList.contains('open')) Poems.render();
+    }
+
+    /* ── WILDCAT OIL SURVEY ───────────────────────────────────── */
+    // Hidden "dry holes" = bad cells (clicking = game over).
+    // Revealed safe cells show:  adj=0 → 💨 gas find,  adj=1 → 🔶 oil shows,  adj=2 → 🛢️ gusher,  adj≥3 → number
+    const WC = {
+      rows: 12, cols: 12, total: 20, board: [], state: 'idle', firstClick: true, seconds: 0, timer: null, initted: false,
+      setDiff(d) {
+        // Realistic wildcat success rates:
+        // Development well (proven basin): ~35% success → 65% dry
+        // Wildcat (frontier basin, global avg): ~30% success → 70% dry
+        // Ultra-deep frontier: ~20% success → 80% dry
+        const cfg = {
+          easy: [9, 9, 53],   // 81 cells, 53 dry = 65% dry (development/proven play)
+          medium: [12, 12, 101],  // 144 cells, 101 dry = 70% dry (typical wildcat)
+          hard: [16, 16, 205],  // 256 cells, 205 dry = 80% dry (ultra-deep frontier)
+        }[d] || [12, 12, 101];
+        [this.rows, this.cols, this.total] = cfg;
+        const win = document.getElementById('win-wildcat');
+        win.style.width = (this.cols * 26 + 32) + 'px';
+        this.init();
+      },
+      init() {
+        clearInterval(this.timer);
+        this.board = Array.from({ length: this.rows }, () => Array.from({ length: this.cols }, () => ({ rev: false, flag: false, dry: false, adj: 0, hitMe: false })));
+        this.state = 'idle'; this.firstClick = true; this.seconds = 0;
+        this._face('🤠'); this._cnt(); this._tim(0); this._render();
+        document.getElementById('wc-status').textContent = 'Left-click: drill  |  Right-click: 🚩 flag dry zone';
+      },
+      _place(sr, sc) {
+        let p = 0;
+        while (p < this.total) {
+          const r = Math.floor(Math.random() * this.rows), c = Math.floor(Math.random() * this.cols);
+          if (this.board[r][c].dry) continue;
+          if (Math.abs(r - sr) <= 1 && Math.abs(c - sc) <= 1) continue;
+          this.board[r][c].dry = true; p++;
+        }
+        for (let r = 0; r < this.rows; r++) for (let c = 0; c < this.cols; c++)
+          if (!this.board[r][c].dry) { let n = 0; for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const nr = r + dr, nc = c + dc; if (nr >= 0 && nr < this.rows && nc >= 0 && nc < this.cols && this.board[nr][nc].dry) n++; } this.board[r][c].adj = n; }
+      },
+      reveal(r, c) {
+        if (this.state === 'lost' || this.state === 'won') return;
+        const cell = this.board[r][c]; if (cell.rev || cell.flag) return;
+        if (this.firstClick) { this._place(r, c); this.firstClick = false; this.state = 'playing'; this.timer = setInterval(() => { this.seconds = Math.min(999, this.seconds + 1); this._tim(this.seconds); }, 1000); }
+        if (cell.dry) { cell.hitMe = true; this._dryHole(); return; }
+        cell.rev = true;
+        if (cell.adj === 0) for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const nr = r + dr, nc = c + dc; if (nr >= 0 && nr < this.rows && nc >= 0 && nc < this.cols && !this.board[nr][nc].rev) this.reveal(nr, nc); }
+        this._win(); this._render();
+      },
+      flag(r, c) { if (this.state === 'lost' || this.state === 'won') return; const cell = this.board[r][c]; if (cell.rev) return; cell.flag = !cell.flag; this._cnt(); this._render(); },
+      _dryHole() {
+        clearInterval(this.timer); this.state = 'lost';
+        for (let r = 0; r < this.rows; r++) for (let c = 0; c < this.cols; c++) if (this.board[r][c].dry) this.board[r][c].rev = true;
+        this._face('😢'); this._render();
+        document.getElementById('wc-status').textContent = '🪨 DRY HOLE! No commercial find. Survey failed.';
+      },
+      _win() {
+        for (let r = 0; r < this.rows; r++) for (let c = 0; c < this.cols; c++) if (!this.board[r][c].dry && !this.board[r][c].rev) return;
+        clearInterval(this.timer); this.state = 'won';
+        for (let r = 0; r < this.rows; r++) for (let c = 0; c < this.cols; c++) if (this.board[r][c].dry) this.board[r][c].flag = true;
+        this._face('🤑'); this._cnt(); this._render();
+        document.getElementById('wc-status').textContent = '🛢️ DISCOVERY! All dry zones mapped. Commercial find confirmed!';
+      },
+      _face(e) { document.getElementById('wc-face').textContent = e; },
+      _tim(s) { document.getElementById('wc-timer').textContent = String(s).padStart(3, '0'); },
+      _cnt() {
+        let f = 0; for (let r = 0; r < this.rows; r++) for (let c = 0; c < this.cols; c++) if (this.board[r][c].flag) f++;
+        document.getElementById('wc-dry-count').textContent = String(Math.max(0, this.total - f)).padStart(3, '0');
+      },
+      _icon(cell) {
+        if (!cell.rev) return cell.flag ? '🚩' : '';
+        if (cell.dry) return cell.hitMe ? '💀' : '🪨';
+        if (cell.adj === 0) return '💨';
+        if (cell.adj === 1) return '🔶';
+        if (cell.adj === 2) return '🛢️';
+        return cell.adj;
+      },
+      _cls(cell) {
+        if (!cell.rev) return 'wc-cell';
+        if (cell.dry) return cell.hitMe ? 'wc-cell rev dry-hit' : 'wc-cell rev dry-show';
+        if (cell.adj <= 2) return 'wc-cell rev';
+        return `wc-cell rev wc-n${Math.min(cell.adj, 8)}`;
+      },
+      _render() {
+        const b = document.getElementById('wc-board');
+        b.style.gridTemplateColumns = `repeat(${this.cols},26px)`; b.innerHTML = '';
+        for (let r = 0; r < this.rows; r++) for (let c = 0; c < this.cols; c++) {
+          const cell = this.board[r][c], div = document.createElement('div');
+          div.className = this._cls(cell); div.textContent = this._icon(cell);
+          const _r = r, _c = c;
+          div.addEventListener('click', () => this.reveal(_r, _c));
+          div.addEventListener('contextmenu', e => { e.preventDefault(); this.flag(_r, _c); });
+          div.addEventListener('mousedown', () => { if (this.state !== 'lost' && this.state !== 'won') this._face('😬'); });
+          div.addEventListener('mouseup', () => { if (this.state === 'playing') this._face('🤠'); });
+          b.appendChild(div);
+        }
+      }
+    };
+
+    /* ── BACKEND CONTENT LOADER ───────────────────────────────── */
+    // Edit content.json in your GitHub repo to populate Gallery, Ramani, and Poems.
+    // Images can be relative paths (assets/gallery/photo.jpg) or full URLs.
+    // Format: { "gallery":[{"src":"...","caption":"..."}], "ramani":[{"src":"..."}], "poems":[{"title":"...","body":"...","date":"YYYY-MM-DD"}] }
+    async function loadBackendContent() {
+      try {
+        const res = await fetch('./content.json', { cache: 'no-cache' });
+        if (!res.ok) return; // file not found — silent fallback
+        const data = await res.json();
+        if (Array.isArray(data.gallery) && data.gallery.length) {
+          Gallery.backend = data.gallery;
+          Gallery.render();
+        }
+        if (Array.isArray(data.ramani) && data.ramani.length) {
+          Ramani.backend = data.ramani;
+          Ramani.render();
+        }
+        if (Array.isArray(data.poems) && data.poems.length) {
+          Poems.backend = data.poems;
+          Poems.render();
+        }
+      } catch (e) {
+        // content.json missing or malformed — localStorage still works fine
+      }
+    }
+
+    /* ── BLOG (SUBSTACK RSS) ──────────────────────────────────── */
+    // Set your Substack URL here — just this one line to change.
+    const SUBSTACK_URL = 'https://arthurkisaka.substack.com';
+
+    const Blog = {
+      loaded: false,
+      open() {
+        // Update header link and label
+        document.getElementById('blog-substack-link').href = SUBSTACK_URL;
+        const handle = SUBSTACK_URL.replace('https://', '').replace('http://', '').replace(/\/$/, '');
+        document.getElementById('blog-handle-label').textContent = handle;
+        if (!this.loaded) this.load();
+      },
+      async load() {
+        const container = document.getElementById('blog-posts');
+        const status = document.getElementById('blog-status');
+        if (!container) return;
+        container.innerHTML = '<div class="blog-loading">⏳ Fetching posts from Substack...</div>';
+        status.textContent = 'Loading...';
+        const rss = SUBSTACK_URL + '/feed';
+        try {
+          const res = await fetch(rss);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const text = await res.text();
+          const parser = new DOMParser();
+          const xml = parser.parseFromString(text, 'application/rss+xml');
+          // Check for parse error
+          if (xml.querySelector('parsererror')) throw new Error('RSS parse error');
+          const items = Array.from(xml.querySelectorAll('item')).slice(0, 15);
+          if (items.length === 0) { container.innerHTML = '<div class="blog-loading">No posts found.</div>'; return; }
+          container.innerHTML = items.map(item => {
+            const title = item.querySelector('title')?.textContent?.trim() || 'Untitled';
+            const link = (item.querySelector('link')?.textContent || item.querySelector('guid')?.textContent || SUBSTACK_URL).trim();
+            const rawDate = item.querySelector('pubDate')?.textContent?.trim() || '';
+            const date = rawDate ? new Date(rawDate).toLocaleDateString('en-KE', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+            // Strip HTML from description for excerpt
+            const rawDesc = item.querySelector('description')?.textContent || item.querySelector('content\\:encoded')?.textContent || '';
+            const tmp = document.createElement('div'); tmp.innerHTML = rawDesc;
+            const excerpt = (tmp.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 220);
+            return `<div class="blog-post" onclick="window.open('${link}','_blank')">
+          <div class="blog-post-title">${title}</div>
+          <div class="blog-post-meta">${date}</div>
+          ${excerpt ? `<div class="blog-post-excerpt">${excerpt}${excerpt.length >= 220 ? '…' : ''}</div>` : ''}
+          <span class="blog-post-link">Read on Substack →</span>
+        </div>`;
+          }).join('');
+          this.loaded = true;
+          status.textContent = `${items.length} post(s) loaded`;
+        } catch (e) {
+          // CORS or network failure — show helpful fallback
+          container.innerHTML = `<div class="blog-err">
+        <p style="font-weight:bold;color:#cc0000;margin-bottom:8px">⚠️ Could not load posts automatically.</p>
+        <p style="margin-bottom:8px;color:#333">Most browsers block cross-origin RSS fetches from GitHub Pages.<br>
+        Your posts are visible at your Substack directly.</p>
+        <p><a href="${SUBSTACK_URL}" target="_blank" style="color:#0000cc">${SUBSTACK_URL} ↗</a></p>
+        <hr style="margin:12px 0;border:none;border-top:1px solid #c0c0c0">
+        <p style="font-size:10px;color:#808080">To embed posts natively: add a <code>content.json</code> with a <code>"blog"</code> array,<br>
+        or use a CORS proxy. See README.md for details.</p>
+      </div>`;
+          status.textContent = 'CORS blocked — open Substack directly';
+        }
+      }
+    };
+
+    /* ── SCREENSAVER ──────────────────────────────────────────── */
+    const SS = {
+      IDLE: 30000, to: null, frame: null, depth: 0,
+      init() {
+        // Preload drill bit image — place your BMP at assets/drillbit.bmp
+        this.bitImg = new Image();
+        this.bitImg.src = 'images/Drill_Bit 60px.svg';
+        this.reset();
+      },
+      reset() { clearTimeout(this.to); this.to = setTimeout(() => this.start(), this.IDLE); },
+      start() {
+        const sc = document.getElementById('screensaver'), cv = document.getElementById('ss-canvas');
+        sc.classList.add('on'); cv.width = window.innerWidth; cv.height = window.innerHeight;
+        this.depth = 0; this._draw(cv.getContext('2d'), cv.width, cv.height);
+        ['mousemove', 'click', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => this.stop(), { once: true }));
+      },
+      stop() { cancelAnimationFrame(this.frame); document.getElementById('screensaver').classList.remove('on'); this.reset(); },
+      _draw(ctx, w, h) {
+        ctx.clearRect(0, 0, w, h);
+        [[0, .11, '#050b18'], [.11, .14, '#003843'], [.25, .16, '#1a3560'], [.41, .17, '#004d5e'], [.58, .18, '#0f1e3d'], [.76, .24, '#020810']].forEach(([y, dh, col]) => { ctx.fillStyle = col; ctx.fillRect(0, y * h, w, dh * h + 1); });
+        ctx.globalAlpha = .25; ctx.strokeStyle = '#00c4d4'; ctx.lineWidth = .7;
+        [.11, .25, .41, .58, .76].forEach(yf => { ctx.beginPath(); for (let x = 0; x <= w; x += 20)x === 0 ? ctx.moveTo(x, yf * h + Math.sin(x / 80) * 5) : ctx.lineTo(x, yf * h + Math.sin(x / 80) * 5); ctx.stroke(); });
+        ctx.globalAlpha = 1;
+        this.depth += .00075; if (this.depth > 1.05) this.depth = 0;  // half speed
+        const dy = Math.min(this.depth * h, h - 20), dx = w / 2;
+        ctx.strokeStyle = '#b0b0b0'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(dx, 0); ctx.lineTo(dx, dy); ctx.stroke();
+        ctx.strokeStyle = '#808080'; ctx.lineWidth = 1; for (let y = 25; y < dy; y += 32) { ctx.beginPath(); ctx.moveTo(dx - 7, y); ctx.lineTo(dx + 7, y); ctx.stroke(); }
+        // Draw drill bit — BMP image if loaded, triangle fallback otherwise
+        const BW = 36, BH = 48;
+        if (this.bitImg && this.bitImg.complete && this.bitImg.naturalWidth > 0) {
+          ctx.drawImage(this.bitImg, dx - BW / 2, dy, BW, BH);
+        } else {
+          ctx.fillStyle = '#00c4d4';
+          ctx.beginPath(); ctx.moveTo(dx, dy + 18); ctx.lineTo(dx - 9, dy); ctx.lineTo(dx + 9, dy); ctx.closePath(); ctx.fill();
+          ctx.globalAlpha = .3; ctx.fillStyle = '#00c4d4'; ctx.beginPath(); ctx.arc(dx, dy + 9, 16, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
+        }
+        ctx.fillStyle = '#00c4d4'; ctx.font = "bold 13px 'IBM Plex Mono',monospace"; ctx.fillText(`DEPTH: ${Math.round(this.depth * 3500)} m`, dx + 22, Math.min(dy + 28, h - 14));
+        ctx.globalAlpha = .4; ctx.fillStyle = '#00c4d4'; ctx.font = "11px 'IBM Plex Mono',monospace"; ctx.fillText('ARTHUR KISAKA [v1998] — DRILLING SIMULATION', 18, 18); ctx.fillStyle = '#666'; ctx.fillText('Move mouse to dismiss', 18, h - 14); ctx.globalAlpha = 1;
+        this.frame = requestAnimationFrame(() => this._draw(ctx, w, h));
+      }
+    };
+    ['mousemove', 'click', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { if (typeof SS !== 'undefined') SS.reset(); }));
+  </script>
 </body>
+
 </html>
